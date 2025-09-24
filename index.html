@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang>
+<head>
+    <meta charset="UTF-8">
+    <title> Jogo do Dara </title>
+    <link rel="'stylesheet" href="style.css">
+</head>
+
+
+
+<body>
+
+    <!-- Autentificação dos jogadores-->
+    <header>
+        <h1> Jogo do Dara </h1>
+        <div id="auth"> <!-- cria um botão dentro de uma caixa -->
+            <button> Entrar </button>
+        </div>
+    </header>
+
+    <!-- Área fixa do tabuleiro -->
+    <main>
+        <section id="game-board"> <!-- cria um tabuleiro 5 por 6-->
+            <div class="board"> </div> <!-- cria as 30 células do tabuleiro-->
+        </section>
+
+        <!-- Área fixa: barra lateral-->
+        <aside>
+            <h2>Informações do Jogo</h2>
+            <div id="player-turn"> Vez do jogador: </div>
+            <div id="score"> Pontuação </div>
+            <button id="show-rules"> Regras </button>
+        </aside>
+    </main>
+
+    <!-- Área fixa do Rodapé-->
+    <footer>
+        <p>Projeto 1: Jogo do Dara</p>
+        <p> Projeto elaborado por: Adriana Oliveira, Beatriz Moreira, Daniela Leitão</p>
+        <p> UC: Tecnologias Web (2025/26)   LCC: Bioinformática</p>
+    </footer>
+
+    <!-- Regras -->
+    <div id="modal-rules" class="modal hidden">
+        <div class="modal-content">
+            <h2> Regras do Jogo </h2>
+            <p>
+                (colocar regras)
+
+            </p>
+            <button class="close-modal"> Fechar </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+
+
+
+
+
+</html>
