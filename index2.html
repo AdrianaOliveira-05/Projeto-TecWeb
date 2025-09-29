@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Jogo do Dara</title>
-    <!-- Ligação ao ficheiro de estilos -->
     <link rel="stylesheet" href="style.css">
-    <!-- Fonte do Google -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -14,7 +12,7 @@
         <h1>Jogo do Dara</h1>
         <p class="slogan">Descobre o tradicional jogo africano e desafia os teus amigos!</p>
         <div id="auth">
-            <button onclick="window.location.href='nova_pagina.html'">Entrar</button>
+            <button onclick="window.location.href='login.html'">Entrar</button>
         </div>
     </header>
 
@@ -22,15 +20,15 @@
     <main>
         <h2>Por que jogar Dara?</h2>
         <div class="card-container">
-            <div class="card">
+            <div class="card" onclick="window.location.href='regras.html'">
                 <h3>🎲 Como jogar</h3>
                 <p>Aprende as regras e descobre a estratégia por trás deste jogo milenar.</p>
             </div>
-            <div class="card">
+            <div class="card" onclick="window.location.href='pontuacao.html'">
                 <h3>🏆 Pontuação</h3>
                 <p>Segue a tua performance e compete para ganhar.</p>
             </div>
-            <div class="card">
+            <div class="card" onclick="window.location.href='multijogador.html'">
                 <h3>🤝 Multijogador</h3>
                 <p>Desafia amigos ou familiares numa experiência interativa.</p>
             </div>
@@ -45,3 +43,4 @@
     </footer>
 </body>
 </html>
+
