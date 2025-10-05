@@ -1,0 +1,8 @@
+- se calhar podemos colocar o rodape mais abaixo na janela e os botoes mais centrados
+
+
+
+
+Falamos em fazer:
+- botao do rodapé nas páginas secundárias: mudar de voltar à pagina principal para jogar (?)
+- acrescentar regras/ informações do jogo
