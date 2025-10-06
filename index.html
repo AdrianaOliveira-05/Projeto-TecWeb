@@ -8,8 +8,11 @@
     <!-- Fontes -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-    <!-- Ficheiro CSS -->
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- JS -->
+    <script defer src="script.js"></script>
 </head>
 
 <body>
@@ -24,39 +27,30 @@
         <section id="identificacao">
             <h2>Identificação</h2>
             <div class="auth-area">
-                <input type="text" placeholder="Utilizador" abled>
-                <input type="password" placeholder="Senha" abled>
-                <button disabled>Entrar</button>
+                <input type="text" id="user" placeholder="Utilizador">
+                <input type="password" id="pass" placeholder="Senha">
+                <button id="btnLogin">Entrar</button>
             </div>
         </section>
 
         <!-- CONFIGURAÇÃO -->
-        <section id="configuracao">
+        <section id="configuracao" class="oculto">
             <h2>Configuração</h2>
             <form>
                 <label>Tamanho do tabuleiro:</label>
                 <select>
-                    <option>4x9 (padrão)</option>
-                    <option>4x7</option>
-                    <option>4x8</option>
-                    <option>4x10</option>
-                    <option>4x11</option>
-                    <option>4x12</option>
-                    <option>4x13</option>
-                    <option>4x14</option>
-                    <option>4x15</option>
+                    <option>5x6 (padrão)</option>
+                    <option>6x7</option>
                 </select>
 
                 <label>Modo de jogo:</label>
                 <select>
-                    <option> Jogador Vs. Computador </option>
-                    <option> Jogador Vs. Jogador </option>
+                    <option>Contra o Computador</option>
                 </select>
 
                 <label>Primeiro a jogar:</label>
                 <select>
-                    <option>Jogador_1</option>
-                    <option>Jogador_2</option>
+                    <option>Jogador</option>
                     <option>Computador</option>
                 </select>
 
@@ -70,57 +64,57 @@
         </section>
 
         <!-- COMANDOS -->
-        <section id="comandos">
+        <section id="comandos" class="oculto">
             <h2>Comandos</h2>
-            <div class="botoes">
-                <button>Iniciar Jogo</button>
-                <button>Ver Instruções</button>
-                <button>Desistir</button>
-                <button>Classificações</button>
+            <div class="botoes" id="comandosAntes">
+                <button id="btnIniciarJogo">Iniciar Jogo</button>
+                <button id="btnVerInstrucoes">Ver Instruções</button>
+                <button id="btnVerClassificacoes">Classificações</button>
+            </div>
+            <div class="botoes oculto" id="comandosDurante">
+                <button id="btnDesistir">Desistir</button>
+                <button id="btnVerInstrucoes2">Ver Instruções</button>
+                <button id="btnVerClassificacoes2">Classificações</button>
             </div>
         </section>
 
-        <!-- DADO DE PAUS -->
-        <section id="dado">
-            <h2>Dado de Paus</h2>
-            <div class="dado-area">
-                🎲 <p>Clique para lançar</p>
-            </div>
-        </section>
+        <!-- JOGO (DADO, TABULEIRO, MENSAGENS) -->
+        <section id="jogo" class="oculto">
+            <section id="dado">
+                <h2>Dado de Paus</h2>
+                <div class="dado-area">🎲 <p>Clique para lançar</p></div>
+            </section>
 
-        <!-- TABULEIRO -->
-        <section id="tabuleiro">
-            <h2>Tabuleiro</h2>
-            <div class="board">
-                <!-- Exemplo de grelha 5x6 -->
+            <section id="tabuleiro">
+                <h2>Tabuleiro</h2>
                 <div class="grid">
-                    <!-- As casas do tabuleiro (30 células) -->
-                    <!-- Gerado futuramente por JS -->
+                    <!-- Grelha 5x6 -->
                     <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
                     <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
                     <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
-                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div> 
-
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
                 </div>
-            </div>
+            </section>
+
+            <section id="mensagens">
+                <h2>Mensagens</h2>
+                <p>Aqui aparecerão informações do jogo (ex: "É a tua vez!", "Jogada inválida", "Computador a jogar...")</p>
+            </section>
         </section>
 
-        <!-- MENSAGENS -->
-        <section id="mensagens">
-            <h2>Mensagens</h2>
-            <p>Aqui aparecerão informações do jogo (ex: "É a tua vez!", "Jogada inválida", "Computador a jogar...")</p>
-        </section>
-
-        <!-- INSTRUÇÕES (painel sobreposto) -->
+        <!-- INSTRUÇÕES -->
         <section id="instrucoes" class="painel oculto">
             <h2>Instruções</h2>
             <p>Aqui serão apresentadas as regras e instruções do jogo Tâb.</p>
+            <button class="btnFechar">Fechar</button>
         </section>
 
-        <!-- CLASSIFICAÇÕES (painel sobreposto) -->
+        <!-- CLASSIFICAÇÕES -->
         <section id="classificacoes" class="painel oculto">
             <h2>Classificações</h2>
             <p>Tabela de pontuações (a definir na segunda fase).</p>
+            <button class="btnFechar">Fechar</button>
         </section>
     </main>
 
