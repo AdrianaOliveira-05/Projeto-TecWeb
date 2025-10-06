@@ -39,15 +39,11 @@
             <form>
                 <label>Tamanho do tabuleiro:</label>
                 <select>
-                        <option>4x9 (padrão)</option>
-                        <option>4x7</option>
-                        <option>4x8</option>
-                        <option>4x10</option>
-                        <option>4x11</option>
-                        <option>4x12</option>
-                        <option>4x13</option>
-                        <option>4x14</option>
-                        <option>4x15</option>
+                    <option>4x7</option>
+                    <option>4x9 (padrão)</option>
+                    <option>4x11</option>
+                    <option>4x13</option>
+                    <option>4x15</option>
                 </select>
 
                 <label>Modo de jogo:</label>
@@ -73,38 +69,40 @@
         <!-- COMANDOS -->
         <section id="comandos" class="oculto">
             <h2>Comandos</h2>
+
+            <!-- ANTES DO JOGO -->
             <div class="botoes" id="comandosAntes">
                 <button id="btnIniciarJogo">Iniciar Jogo</button>
                 <button id="btnVerInstrucoes">Ver Instruções</button>
                 <button id="btnVerClassificacoes">Classificações</button>
             </div>
-            <div class="botoes_ocultos" id="comandosDurante">
+
+            <!-- DURANTE O JOGO -->
+            <div class="botoes oculto" id="comandosDurante">
                 <button id="btnDesistir">Desistir</button>
+                <button id="btnVerInstrucoes2">Ver Instruções</button>
+                <button id="btnVerClassificacoes2">Classificações</button>
             </div>
         </section>
 
-        <!-- JOGO (DADO, TABULEIRO, MENSAGENS) -->
+        <!-- JOGO -->
         <section id="jogo" class="oculto">
+            <!-- Dado -->
             <section id="dado">
                 <h2>Dado de Paus</h2>
                 <div class="dado-area">🎲 <p>Clique para lançar</p></div>
             </section>
 
+            <!-- Tabuleiro -->
             <section id="tabuleiro">
                 <h2>Tabuleiro</h2>
-                <div class="grid">
-                    <!-- Grelha 5x6 -->
-                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
-                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
-                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
-                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
-                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
-                </div>
+                <div class="grid" id="gameGrid"></div>
             </section>
 
+            <!-- Mensagens -->
             <section id="mensagens">
                 <h2>Mensagens</h2>
-                <p>Aqui aparecerão informações do jogo (ex: "É a tua vez!", "Jogada inválida", "Computador a jogar...")</p>
+                <p id="mensagemTexto">Aguarda o início do jogo...</p>
             </section>
         </section>
 
