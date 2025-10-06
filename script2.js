@@ -1,111 +1,100 @@
-// Selecionar elementos principais
-const identificacao = document.getElementById("identificacao");
-const configuracao = document.getElementById("configuracao");
-const comandos = document.getElementById("comandos");
-const jogo = document.getElementById("jogo");
+document.addEventListener("DOMContentLoaded", () => {
+  // ELEMENTOS PRINCIPAIS
+  const secIdent = document.getElementById("identificacao");
+  const secConfig = document.getElementById("configuracao");
+  const secComandos = document.getElementById("comandos");
+  const secJogo = document.getElementById("jogo");
 
-const comandosAntes = document.getElementById("comandosAntes");
-const comandosDurante = document.getElementById("comandosDurante");
+  // CONJUNTOS DE BOTÕES
+  const comandosAntes = document.getElementById("comandosAntes");
+  const comandosDurante = document.getElementById("comandosDurante");
 
-// Botões principais
-const btnLogin = document.getElementById("btnLogin");
-const btnIniciarJogo = document.getElementById("btnIniciarJogo");
-const btnDesistir = document.getElementById("btnDesistir");
+  // BOTÕES
+  const btnLogin = document.getElementById("btnLogin");
+  const btnIniciar = document.getElementById("btnIniciarJogo");
+  const btnDesistir = document.getElementById("btnDesistir");
 
-// Painéis de Instruções e Classificações
-const painelInstrucoes = document.getElementById("instrucoes");
-const painelClassificacoes = document.getElementById("classificacoes");
-const botoesFechar = document.querySelectorAll(".btnFechar");
+  // PAINÉIS
+  const painelInstr = document.getElementById("instrucoes");
+  const painelClass = document.getElementById("classificacoes");
+  const botoesFechar = document.querySelectorAll(".btnFechar");
 
-const btnVerInstrucoes = document.getElementById("btnVerInstrucoes");
-const btnVerInstrucoes2 = document.getElementById("btnVerInstrucoes2");
-const btnVerClassificacoes = document.getElementById("btnVerClassificacoes");
-const btnVerClassificacoes2 = document.getElementById("btnVerClassificacoes2");
+  const btnInstr1 = document.getElementById("btnVerInstrucoes");
+  const btnInstr2 = document.getElementById("btnVerInstrucoes2");
+  const btnClass1 = document.getElementById("btnVerClassificacoes");
+  const btnClass2 = document.getElementById("btnVerClassificacoes2");
 
-// =====================
-// ESTADO INICIAL
-// =====================
-window.addEventListener("DOMContentLoaded", () => {
-  // Mostra apenas a identificação
-  identificacao.classList.remove("oculto");
-  configuracao.classList.add("oculto");
-  comandos.classList.add("oculto");
-  jogo.classList.add("oculto");
-
-  // Garante que apenas comandosAntes está visível no início
-  comandosAntes.classList.remove("oculto");
-  comandosDurante.classList.add("oculto");
-});
-
-// =====================
-// LOGIN
-// =====================
-btnLogin.addEventListener("click", () => {
-  const user = document.getElementById("user").value.trim();
-
-  if (user === "") {
-    alert("Insere o nome de utilizador!");
-    return;
+  // ===== ESTADO INICIAL =====
+  function estadoInicial() {
+    secIdent.classList.remove("oculto");
+    secConfig.classList.add("oculto");
+    secComandos.classList.add("oculto");
+    secJogo.classList.add("oculto");
+    comandosAntes.classList.remove("oculto");
+    comandosDurante.classList.add("oculto");
   }
 
-  // Esconde a identificação
-  identificacao.classList.add("oculto");
+  estadoInicial();
 
-  // Mostra configuração e comandos
-  configuracao.classList.remove("oculto");
-  comandos.classList.remove("oculto");
+  // ===== LOGIN =====
+  btnLogin.addEventListener("click", () => {
+    const user = document.getElementById("user").value.trim();
+    if (user === "") {
+      alert("Insere o nome de utilizador!");
+      return;
+    }
 
-  // Garante que apenas comandosAntes é visível
-  comandosAntes.classList.remove("oculto");
-  comandosDurante.classList.add("oculto");
+    // Esconde identificação
+    secIdent.classList.add("oculto");
+
+    // Mostra configuração + comandos iniciais
+    secConfig.classList.remove("oculto");
+    secComandos.classList.remove("oculto");
+
+    // Garante que só aparecem botões iniciais
+    comandosAntes.classList.remove("oculto");
+    comandosDurante.classList.add("oculto");
+  });
+
+  // ===== INICIAR JOGO =====
+  btnIniciar.addEventListener("click", () => {
+    // Esconde configuração
+    secConfig.classList.add("oculto");
+
+    // Mostra jogo (tabuleiro + dado + mensagens)
+    secJogo.classList.remove("oculto");
+
+    // Mostra apenas comandos durante o jogo
+    comandosAntes.classList.add("oculto");
+    comandosDurante.classList.remove("oculto");
+  });
+
+  // ===== DESISTIR =====
+  btnDesistir.addEventListener("click", () => {
+    // Esconde jogo
+    secJogo.classList.add("oculto");
+
+    // Mostra configuração outra vez
+    secConfig.classList.remove("oculto");
+
+    // Mostra novamente comandos iniciais
+    comandosDurante.classList.add("oculto");
+    comandosAntes.classList.remove("oculto");
+  });
+
+  // ===== PAINÉIS =====
+  function abrirPainel(painel) {
+    painel.classList.remove("oculto");
+  }
+
+  function fecharPainel() {
+    painelInstr.classList.add("oculto");
+    painelClass.classList.add("oculto");
+  }
+
+  btnInstr1.addEventListener("click", () => abrirPainel(painelInstr));
+  btnInstr2.addEventListener("click", () => abrirPainel(painelInstr));
+  btnClass1.addEventListener("click", () => abrirPainel(painelClass));
+  btnClass2.addEventListener("click", () => abrirPainel(painelClass));
+  botoesFechar.forEach(btn => btn.addEventListener("click", fecharPainel));
 });
-
-// =====================
-// INICIAR JOGO
-// =====================
-btnIniciarJogo.addEventListener("click", () => {
-  // Esconde configuração
-  configuracao.classList.add("oculto");
-
-  // Mostra tabuleiro, dado e mensagens
-  jogo.classList.remove("oculto");
-
-  // Troca comandos: antes → durante
-  comandosAntes.classList.add("oculto");
-  comandosDurante.classList.remove("oculto");
-});
-
-// =====================
-// DESISTIR
-// =====================
-btnDesistir.addEventListener("click", () => {
-  // Esconde jogo
-  jogo.classList.add("oculto");
-
-  // Mostra configuração novamente
-  configuracao.classList.remove("oculto");
-
-  // Volta aos comandosAntes
-  comandosDurante.classList.add("oculto");
-  comandosAntes.classList.remove("oculto");
-});
-
-// =====================
-// PAINÉIS (Instruções e Classificações)
-// =====================
-function abrirPainel(painel) {
-  painel.classList.remove("oculto");
-}
-
-function fecharPainel() {
-  painelInstrucoes.classList.add("oculto");
-  painelClassificacoes.classList.add("oculto");
-}
-
-btnVerInstrucoes.addEventListener("click", () => abrirPainel(painelInstrucoes));
-btnVerInstrucoes2.addEventListener("click", () => abrirPainel(painelInstrucoes));
-
-btnVerClassificacoes.addEventListener("click", () => abrirPainel(painelClassificacoes));
-btnVerClassificacoes2.addEventListener("click", () => abrirPainel(painelClassificacoes));
-
-botoesFechar.forEach(btn => btn.addEventListener("click", fecharPainel));
