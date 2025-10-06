@@ -1,103 +1,148 @@
-html {
-  height: 100%;
-  width: 100%;
-}
-
-/* Reset simples */
+/* Fontes e Reset */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* Fonte principal */
 body {
     font-family: 'Poppins', sans-serif;
-    font-weight: 400;
     background: #f4f6f9;
     color: #333;
     line-height: 1.6;
 }
 
 /* Cabeçalho */
-header {
-    background: linear-gradient(135deg, #a8c6fe, #74a7fe);
+header#logo {
+    background: linear-gradient(135deg, #74a7fe, #4f8ffe);
     color: white;
     text-align: center;
-    padding: 3rem 1rem;
+    padding: 2.5rem 1rem;
 }
 
-header h1 {
+header#logo h1 {
     font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
     font-size: 3rem;
-    margin-bottom: 0.5rem;
-}
-
-header .slogan {
-    font-size: 1.2rem;
-    margin-bottom: 1.5rem;
-}
-
-/* Botão "Entrar" */
-#auth button {
-    background: white;
-    color: #74a7fe;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 25px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-#auth button:hover {
-    background: #333;
-    color: white;
-}
-
-/* Secção principal */
-main {
-    text-align: center;
-    padding: 3rem 2rem;
-}
-
-main h2 {
-    font-family: 'Montserrat', sans-serif;
     font-weight: 700;
-    color: #74a7fe;
-    font-size: 2rem;
-    margin-bottom: 2rem;
 }
 
-/* Cards */
-.card-container {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 2rem;
+header#logo .slogan {
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
 }
 
-.card {
+/* Secções principais */
+main {
+    display: grid;
+    grid-template-areas:
+        "identificacao configuracao comandos"
+        "dado tabuleiro mensagens";
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 1rem;
+    padding: 2rem;
+}
+
+/* Estilo geral das secções */
+section {
     background: white;
-    padding: 2rem 1.5rem;
-    border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    width: 250px;
-    transition: transform 0.3s, box-shadow 0.3s;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    padding: 1rem;
+}
+
+h2 {
+    font-family: 'Montserrat', sans-serif;
+    color: #4f8ffe;
+    margin-bottom: 1rem;
+}
+
+/* Identificação */
+#identificacao input {
+    display: block;
+    margin: 0.5rem auto;
+    padding: 0.5rem;
+    width: 80%;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* Configuração */
+#configuracao select {
+    display: block;
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* Comandos */
+#comandos .botoes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#comandos button {
+    background: #4f8ffe;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.8rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+#comandos button:hover {
+    background: #2f5fd6;
+}
+
+/* Dado */
+#dado .dado-area {
+    text-align: center;
+    font-size: 2rem;
     cursor: pointer;
 }
 
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+/* Tabuleiro */
+#tabuleiro .grid {
+    display: grid;
+    grid-template-columns: repeat(6, 40px);
+    gap: 5px;
+    justify-content: center;
+    margin-top: 1rem;
 }
 
-.card h3 {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: #74a7fe;
+.cell {
+    width: 40px;
+    height: 40px;
+    background: #e6ebff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Mensagens */
+#mensagens {
+    grid-column: span 3;
+    text-align: center;
+}
+
+/* Painéis sobrepostos */
+.painel {
+    position: fixed;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    padding: 2rem;
+    display: none;
+}
+
+.painel.oculto {
+    display: none;
 }
 
 /* Rodapé */
@@ -105,8 +150,6 @@ footer {
     background: #222;
     color: #ddd;
     text-align: center;
-    padding: 1.5rem;
-    margin-top: 3rem;
-    font-size: 0.9rem;
+    padding: 1rem;
+    margin-top: 2rem;
 }
-
