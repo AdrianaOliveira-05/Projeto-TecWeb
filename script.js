@@ -43,10 +43,10 @@ window.addEventListener("DOMContentLoaded", () => {
 btnLogin.addEventListener("click", () => {
   const user = document.getElementById("user").value.trim();
 
-  if (user === "") {
-    alert("Insere o nome de utilizador!");
-    return;
-  }
+  //if (user === "") {
+    //alert("Insere o nome de utilizador!");
+    //return;
+  //}
 
   // Esconde a identificação
   identificacao.classList.add("oculto");
