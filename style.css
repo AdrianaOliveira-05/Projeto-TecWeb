@@ -35,7 +35,7 @@ header#logo .slogan {
     font-size: 1.2rem;
 }
 
-/* SEÇÕES */
+/* SEÇÕES GERAIS */
 main {
     display: flex;
     flex-direction: column;
@@ -49,14 +49,13 @@ section {
     border-radius: 10px;
     box-shadow: 0 3px 6px rgba(0,0,0,0.15);
     padding: 1.5rem;
-    width: 80%;
+    width: 100%;
     max-width: 800px;
     text-align: center;
-    align-content: flex-end;
     border: 2px solid #c1a57b;
 }
 
-/* CAMPOS LOGIN */
+/* LOGIN */
 .auth-area input {
     display: block;
     width: 80%;
@@ -97,7 +96,7 @@ section {
 #comandos .botoes {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.6rem;
     margin-top: 1rem;
 }
 
@@ -105,49 +104,28 @@ section {
     background: #b08968;
     color: white;
     border: none;
-    border-radius: 6px;
-    padding: 0.8rem;
+    border-radius: 8px;
+    padding: 0.9rem;
     cursor: pointer;
     font-weight: 600;
+    transition: background 0.3s, transform 0.2s;
 }
 
 #comandos button:hover {
     background: #6b4226;
+    transform: scale(1.02);
 }
-
-/* COMANDOS depois*/
-#comandos_ocultos .botoes_depois {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 1rem;
-}
-#comandos_ocultos button {
-    background: #b08968;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 0.8rem;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-#comandos_ocultos button:hover {
-    background: #6b4226;
-}
-
-
 
 /* TABULEIRO */
 .grid {
     display: grid;
-    grid-template-columns: repeat(9, 40px); column-gap: 20px; row-gap: 20 px;
     gap: 10px;
     justify-content: center;
     margin-top: 1rem;
-    background: #d4a373;
+    background: #d4a373; /* madeira clara */
     padding: 20px;
     border-radius: 10px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
 }
 
 .cell {
@@ -168,9 +146,12 @@ section {
 #mensagens {
     background: #fef2d8;
     border: 2px dashed #6b4226;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-top: 1rem;
 }
 
-/* PAINÉIS */
+/* PAINÉIS (INSTRUÇÕES E CLASSIFICAÇÕES) */
 .painel {
     position: fixed;
     top: 10%;
@@ -190,6 +171,22 @@ section {
     display: none;
 }
 
+/* BOTÃO FECHAR */
+.btnFechar {
+    margin-top: 1.5rem;
+    background: #b08968;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btnFechar:hover {
+    background: #6b4226;
+}
+
 /* RODAPÉ */
 footer {
     background: #6b4226;
@@ -202,5 +199,5 @@ footer {
 
 /* OCULTAR */
 .oculto {
-    display: none;
+    display: none !important;
 }
