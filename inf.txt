@@ -1,8 +1,20 @@
+Grupo 2:
+
+
 - se calhar podemos colocar o rodape mais abaixo na janela e os botoes mais centrados
 
 
 
 
 Falamos em fazer:
-- botao do rodapé nas páginas secundárias: mudar de voltar à pagina principal para jogar (?)
 - acrescentar regras/ informações do jogo
+
+
+
+
+
+HTML:
+- criar contentores em vez de paginas html
+- colocar as regras
+- criar tabuleiro (4 linhas por 9 colunas)
+- 
