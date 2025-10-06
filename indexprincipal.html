@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tâb - Jogo</title>
+
+    <!-- Fontes -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Ficheiro CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- LOGOTIPO -->
+    <header id="logo">
+        <h1>Tâb</h1>
+        <p class="slogan">O tradicional jogo de estratégia</p>
+    </header>
+
+    <main>
+        <!-- IDENTIFICAÇÃO -->
+        <section id="identificacao">
+            <h2>Identificação</h2>
+            <div class="auth-area">
+                <input type="text" placeholder="Utilizador" disabled>
+                <input type="password" placeholder="Senha" disabled>
+                <button disabled>Entrar</button>
+                <p>(Área desativada nesta fase)</p>
+            </div>
+        </section>
+
+        <!-- CONFIGURAÇÃO -->
+        <section id="configuracao">
+            <h2>Configuração</h2>
+            <form>
+                <label>Tamanho do tabuleiro:</label>
+                <select>
+                    <option>5x6 (padrão)</option>
+                    <option>6x7</option>
+                </select>
+
+                <label>Modo de jogo:</label>
+                <select>
+                    <option>Contra o Computador</option>
+                </select>
+
+                <label>Primeiro a jogar:</label>
+                <select>
+                    <option>Jogador</option>
+                    <option>Computador</option>
+                </select>
+
+                <label>Nível da IA:</label>
+                <select>
+                    <option>Fácil</option>
+                    <option>Médio</option>
+                    <option>Difícil</option>
+                </select>
+            </form>
+        </section>
+
+        <!-- COMANDOS -->
+        <section id="comandos">
+            <h2>Comandos</h2>
+            <div class="botoes">
+                <button>Iniciar Jogo</button>
+                <button>Ver Instruções</button>
+                <button>Desistir</button>
+                <button>Classificações</button>
+            </div>
+        </section>
+
+        <!-- DADO DE PAUS -->
+        <section id="dado">
+            <h2>Dado de Paus</h2>
+            <div class="dado-area">
+                🎲 <p>Clique para lançar</p>
+            </div>
+        </section>
+
+        <!-- TABULEIRO -->
+        <section id="tabuleiro">
+            <h2>Tabuleiro</h2>
+            <div class="board">
+                <!-- Exemplo de grelha 5x6 -->
+                <div class="grid">
+                    <!-- As casas do tabuleiro (30 células) -->
+                    <!-- Gerado futuramente por JS -->
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MENSAGENS -->
+        <section id="mensagens">
+            <h2>Mensagens</h2>
+            <p>Aqui aparecerão informações do jogo (ex: "É a tua vez!", "Jogada inválida", "Computador a jogar...")</p>
+        </section>
+
+        <!-- INSTRUÇÕES (painel sobreposto) -->
+        <section id="instrucoes" class="painel oculto">
+            <h2>Instruções</h2>
+            <p>Aqui serão apresentadas as regras e instruções do jogo Tâb.</p>
+        </section>
+
+        <!-- CLASSIFICAÇÕES (painel sobreposto) -->
+        <section id="classificacoes" class="painel oculto">
+            <h2>Classificações</h2>
+            <p>Tabela de pontuações (a definir na segunda fase).</p>
+        </section>
+    </main>
+
+    <!-- RODAPÉ -->
+    <footer>
+        <p>Projeto 1 - Tecnologias Web (2025/26)</p>
+        <p>Autores: Adriana Oliveira, Beatriz Moreira, Daniela Leitão</p>
+    </footer>
+</body>
+</html>
