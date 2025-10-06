@@ -1,90 +1,107 @@
-/* Fontes e Reset */
+/* RESET */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* BASE */
 body {
     font-family: 'Poppins', sans-serif;
-    background: #f4f6f9;
-    color: #333;
+    background: #f5e6ca; /* tom de areia */
+    color: #3b2f1e;
     line-height: 1.6;
 }
 
-/* Cabeçalho */
+h1, h2 {
+    font-family: 'Montserrat', sans-serif;
+    color: #6b4226; /* tom de madeira escura */
+}
+
+/* CABEÇALHO */
 header#logo {
-    background: linear-gradient(135deg, #74a7fe, #4f8ffe);
+    background: linear-gradient(135deg, #d4a373, #b08968);
     color: white;
     text-align: center;
     padding: 2.5rem 1rem;
+    border-bottom: 5px solid #6b4226;
 }
 
 header#logo h1 {
-    font-family: 'Montserrat', sans-serif;
     font-size: 3rem;
-    font-weight: 700;
 }
 
 header#logo .slogan {
     font-size: 1.2rem;
-    margin-top: 0.5rem;
 }
 
-/* Secções principais */
+/* SEÇÕES */
 main {
-    display: grid;
-    grid-template-areas:
-        "identificacao configuracao comandos"
-        "dado tabuleiro mensagens";
-    grid-template-columns: 1fr 1fr 2fr;
-    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
     padding: 2rem;
 }
 
-/* Estilo geral das secções */
 section {
-    background: white;
+    background: #fff8e7;
     border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    padding: 1rem;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    padding: 1.5rem;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    border: 2px solid #c1a57b;
 }
 
-h2 {
-    font-family: 'Montserrat', sans-serif;
-    color: #4f8ffe;
-    margin-bottom: 1rem;
-}
-
-/* Identificação */
-#identificacao input {
+/* CAMPOS LOGIN */
+.auth-area input {
     display: block;
+    width: 80%;
     margin: 0.5rem auto;
     padding: 0.5rem;
-    width: 80%;
     border-radius: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid #b08968;
+    background: #fffaf2;
 }
 
-/* Configuração */
+.auth-area button {
+    background: #b08968;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.8rem 1.5rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    font-weight: 600;
+}
+
+.auth-area button:hover {
+    background: #6b4226;
+}
+
+/* CONFIGURAÇÃO */
 #configuracao select {
     display: block;
     width: 100%;
     margin-bottom: 1rem;
     padding: 0.5rem;
     border-radius: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid #b08968;
+    background: #fffaf2;
 }
 
-/* Comandos */
+/* COMANDOS */
 #comandos .botoes {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    margin-top: 1rem;
 }
 
 #comandos button {
-    background: #4f8ffe;
+    background: #b08968;
     color: white;
     border: none;
     border-radius: 6px;
@@ -94,62 +111,72 @@ h2 {
 }
 
 #comandos button:hover {
-    background: #2f5fd6;
+    background: #6b4226;
 }
 
-/* Dado */
+/* TABULEIRO */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(6, 50px);
+    gap: 6px;
+    justify-content: center;
+    margin-top: 1rem;
+    background: #d4a373;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.cell {
+    width: 50px;
+    height: 50px;
+    background: #fff8e7;
+    border: 1px solid #6b4226;
+    border-radius: 4px;
+}
+
+/* DADO */
 #dado .dado-area {
-    text-align: center;
     font-size: 2rem;
     cursor: pointer;
 }
 
-/* Tabuleiro */
-#tabuleiro .grid {
-    display: grid;
-    grid-template-columns: repeat(6, 40px);
-    gap: 5px;
-    justify-content: center;
-    margin-top: 1rem;
-}
-
-.cell {
-    width: 40px;
-    height: 40px;
-    background: #e6ebff;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-/* Mensagens */
+/* MENSAGENS */
 #mensagens {
-    grid-column: span 3;
-    text-align: center;
+    background: #fef2d8;
+    border: 2px dashed #6b4226;
 }
 
-/* Painéis sobrepostos */
+/* PAINÉIS */
 .painel {
     position: fixed;
     top: 10%;
     left: 50%;
     transform: translateX(-50%);
     width: 60%;
-    background: white;
+    background: #fff8e7;
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     padding: 2rem;
-    display: none;
+    text-align: center;
+    z-index: 10;
+    border: 3px solid #b08968;
 }
 
 .painel.oculto {
     display: none;
 }
 
-/* Rodapé */
+/* RODAPÉ */
 footer {
-    background: #222;
-    color: #ddd;
+    background: #6b4226;
+    color: #fffaf2;
     text-align: center;
     padding: 1rem;
     margin-top: 2rem;
+    border-top: 5px solid #b08968;
+}
+
+/* OCULTAR */
+.oculto {
+    display: none;
 }
