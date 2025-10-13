@@ -8,14 +8,17 @@
 /* BASE */
 body {
     font-family: 'Poppins', sans-serif;
-    background: #f5e6ca; /* tom de areia */
+    background: #f5e6ca;
+    /* tom de areia */
     color: #3b2f1e;
     line-height: 1.6;
 }
 
-h1, h2 {
+h1,
+h2 {
     font-family: 'Montserrat', sans-serif;
-    color: #6b4226; /* tom de madeira escura */
+    color: #6b4226;
+    /* tom de madeira escura */
 }
 
 /* CABEÇALHO */
@@ -47,7 +50,7 @@ main {
 section {
     background: #fff8e7;
     border-radius: 10px;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
     padding: 1.5rem;
     width: 100%;
     max-width: 800px;
@@ -122,10 +125,11 @@ section {
     gap: 10px;
     justify-content: center;
     margin-top: 1rem;
-    background: #d4a373; /* madeira clara */
+    background: #d4a373;
+    /* madeira clara */
     padding: 20px;
     border-radius: 10px;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .cell {
@@ -142,6 +146,55 @@ section {
     cursor: pointer;
 }
 
+#dado {
+    text-align: center;
+}
+
+#dadoArea {
+    background: #fff8e7;
+    padding: 1rem;
+    border-radius: 10px;
+    display: inline-block;
+    cursor: pointer;
+    border: 2px solid #b08968;
+    transition: transform 0.2s;
+}
+
+#dadoArea:hover {
+    transform: scale(1.05);
+}
+
+/* Contém os 4 paus */
+#pausContainer {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* Visual de cada pau */
+.pau {
+    width: 25px;
+    height: 80px;
+    border-radius: 10px;
+    border: 1px solid #6b4226;
+    background: #fffaf2; /* lado claro por defeito */
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+}
+
+/* Lado escuro (casca) */
+.pau.escuro {
+    background: #6b4226;
+}
+
+/* Resultado */
+#resultadoDado {
+    font-weight: bold;
+    margin-top: 0.5rem;
+    color: #6b4226;
+}
+
+
 /* MENSAGENS */
 #mensagens {
     background: #fef2d8;
@@ -157,18 +210,57 @@ section {
     top: 10%;
     left: 50%;
     transform: translateX(-50%);
-    width: 50%;
+    width: 60%;
+    max-height: 80vh;
+    overflow-y: auto;
     background: #fff8e7;
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     padding: 2rem;
-    text-align: center;
-    z-index: 10;
+    text-align: left;
     border: 3px solid #b08968;
+    z-index: 9999;
 }
 
 .painel.oculto {
     display: none;
+}
+
+
+
+
+
+/* TABELA DE CLASSIFICAÇÕES */
+#tabelaClassificacoes {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background: #fffaf2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#tabelaClassificacoes th,
+#tabelaClassificacoes td {
+    border: 1px solid #c1a57b;
+    padding: 0.7rem;
+    text-align: center;
+}
+
+#tabelaClassificacoes th {
+    background: #d4a373;
+    color: #fffaf2;
+    font-weight: 700;
+}
+
+#tabelaClassificacoes tr:nth-child(even) {
+    background: #f5e6ca;
+}
+
+#tabelaClassificacoes tr:hover {
+    background: #edd4a2;
+    transition: 0.2s;
 }
 
 /* BOTÃO FECHAR */
@@ -201,3 +293,4 @@ footer {
 .oculto {
     display: none !important;
 }
+
