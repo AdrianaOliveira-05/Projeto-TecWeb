@@ -20,3 +20,88 @@ HTML:
 - o n de peças é igual ao das colunas, cada jogador tem uma cor e as pecas de cada um são colocadas em lados opostos
 - dependendo do jogador o tabuleiro tem de rodar 180
 - 
+
+
+<h2>Regras do Jogo Tâb</h2>
+
+<h3>Tabuleiro</h3>
+<p>O <strong>Tâb</strong> é um jogo de tabuleiro para dois jogadores. O tabuleiro tem <strong>4 linhas</strong> e um número <strong>ímpar de colunas</strong>, que pode variar entre <strong>7 e 15</strong>, sendo o tamanho mais comum <strong>4x9</strong>.</p>
+
+<h3>Peças</h3>
+<p>Cada jogador possui peças de cor diferente do adversário. Num tabuleiro com <em>n</em> colunas, cada jogador tem <strong>n peças</strong>.</p>
+
+<ul>
+  <li>As peças de cada jogador são apresentadas do seu lado.</li>
+  <li>As peças do jogador aparecem na parte inferior do tabuleiro.</li>
+  <li>O mesmo tabuleiro é mostrado ao adversário rodado 180º.</li>
+</ul>
+
+<h4>Estado das peças</h4>
+<p>Cada peça pode estar em três estados diferentes:</p>
+<ol>
+  <li>Ainda não foi movida;</li>
+  <li>Já foi movida, mas ainda não chegou à última fila;</li>
+  <li>Já esteve na última fila (4ª).</li>
+</ol>
+<p>O estado pode ser representado, por exemplo, pela transparência da peça.</p>
+
+<h3>Dado de Paus</h3>
+<p>Em vez de um dado tradicional, o Tâb utiliza <strong>4 paus com duas faces distintas</strong> — uma clara e plana (interior da madeira) e uma escura e arredondada (casca).</p>
+
+<ul>
+  <li>Os paus são segurados juntos na mão e depois largados.</li>
+  <li>Conta-se o número de paus com a face clara virada para cima.</li>
+  <li>Esse número determina o valor do lançamento.</li>
+</ul>
+
+<h4>Valores do dado de paus</h4>
+<table border="1" cellspacing="0" cellpadding="6" style="margin:auto; border-collapse:collapse;">
+  <tr><th>Soma</th><th>Valor</th><th>Nome</th><th>Repete</th><th>Probabilidade</th></tr>
+  <tr><td>0</td><td>6</td><td>Sitteh</td><td>Sim</td><td>≈ 6%</td></tr>
+  <tr><td>1</td><td>1</td><td>Tâb</td><td>Sim</td><td>≈ 25%</td></tr>
+  <tr><td>2</td><td>2</td><td>Itneyn</td><td>Não</td><td>≈ 38%</td></tr>
+  <tr><td>3</td><td>3</td><td>Teláteh</td><td>Não</td><td>≈ 25%</td></tr>
+  <tr><td>4</td><td>4</td><td>Arba'ah</td><td>Sim</td><td>≈ 6%</td></tr>
+</table>
+<p><em>Nota:</em> Não existe valor 5. O jogador repete a jogada se o valor for <strong>1, 4 ou 6</strong>.</p>
+
+<h3>Mover as Peças</h3>
+<p>Antes de mover, o jogador deve lançar o dado de paus. O valor obtido indica quantas casas a peça escolhida deve avançar. Existem regras específicas para o início, progressão e restrições do movimento.</p>
+
+<h4>Início do movimento</h4>
+<ul>
+  <li>A primeira vez que uma peça se move, tem de ser com o valor <strong>1 (Tâb)</strong>.</li>
+  <li>Se o valor for 4 ou 6, o jogador repete a jogada.</li>
+  <li>A casa de destino não pode conter outra peça do mesmo jogador.</li>
+  <li>Normalmente, começam-se a mover as peças mais à direita.</li>
+</ul>
+
+<h4>Progressão das peças</h4>
+<ul>
+  <li>As peças movem-se da <strong>esquerda para a direita</strong> na 1ª e 3ª filas.</li>
+  <li>Da <strong>direita para a esquerda</strong> na 2ª e 4ª filas.</li>
+  <li>Ao sair da 1ª fila → passam para a 2ª.</li>
+  <li>Da 2ª → passam para a 3ª.</li>
+  <li>Da 3ª → podem ir para a 4ª ou voltar à 2ª.</li>
+  <li>Da 4ª → voltam à 3ª.</li>
+</ul>
+
+<h4>Restrições</h4>
+<ul>
+  <li>Só pode haver <strong>uma peça por casa</strong>.</li>
+  <li>Uma peça só pode entrar <strong>uma vez na última fila</strong>.</li>
+  <li>Uma peça só se move na 4ª fila se <strong>não existirem peças suas na fila inicial</strong>.</li>
+  <li>As peças nunca podem regressar à fila inicial.</li>
+</ul>
+
+<h4>Passar a vez</h4>
+<p>Se o valor do dado não permitir nenhuma jogada válida e também não permitir novo lançamento, o jogador deve passar a vez.  
+No entanto, <strong>não pode passar</strong> se existir uma jogada possível ou uma nova oportunidade de lançar o dado.</p>
+
+<h3>Capturar Peças</h3>
+<p>Se uma peça cair numa casa ocupada por uma peça adversária, <strong>essa peça é capturada</strong> e removida do tabuleiro.</p>
+
+<h3>Fim do Jogo</h3>
+<p>O jogo termina quando um dos jogadores <strong>ficar sem peças</strong>.  
+O vencedor é o jogador que ainda tiver peças no tabuleiro.</p>
+
