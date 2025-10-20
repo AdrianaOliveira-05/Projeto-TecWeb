@@ -9,3 +9,58 @@ Ver porquê que quando clicamos em desistir, o dado de paus não inicializa
 
 
 setas: ← → ↑ ↓ ↖ ↗ ↘ ↙ 
+
+function desenharTabuleiro() {
+  gameGrid.innerHTML = "";
+  destinosValidosSelecionados.clear();
+
+  for (let i = 0; i < linhas; i++) {
+    for (let j = 0; j < colunas; j++) {
+      const casa = document.createElement("div");
+      casa.classList.add("cell");
+      casa.dataset.linha = i;
+      casa.dataset.coluna = j;
+
+      // --- SETAS, conforme as regras pedidas ---
+      let simbolo = "→";
+      const last = colunas - 1;
+
+      if (i === 0) {
+        // 1ª linha: todas →, última ↗
+        simbolo = (j === last) ? "↗" : "→";
+      } else if (i === 1) {
+        // 2ª linha: primeira ↗, meio →, última ↖
+        if (j === 0) simbolo = "↗";
+        else if (j === last) simbolo = "↖";
+        else simbolo = "→";
+      } else if (i === 2) {
+        // 3ª linha: espelho da 2ª → primeira ↘, meio →, última ↙
+        if (j === 0) simbolo = "↘";
+        else if (j === last) simbolo = "↙";
+        else simbolo = "→";
+      } else if (i === 3) {
+        // 4ª linha: espelho da 1ª → todas →, última ↘
+        simbolo = (j === last) ? "↘" : "→";
+      }
+
+      // seta centrada e leve (visível mesmo sob as peças)
+      const seta = document.createElement("div");
+      seta.classList.add("seta-fundo");
+      seta.textContent = simbolo;
+      casa.appendChild(seta);
+
+      // peça (círculo) se existir
+      const peca = tabuleiroDados[i][j];
+      if (peca) {
+        const circulo = document.createElement("div");
+        circulo.classList.add("peca");
+        circulo.style.background = peca.owner === "A" ? "royalblue" : "firebrick";
+        circulo.style.opacity = "0.85";
+        casa.appendChild(circulo);
+      }
+
+      casa.addEventListener("click", () => selecionarCasa(i, j));
+      gameGrid.appendChild(casa);
+    }
+  }
+}
