@@ -41,6 +41,74 @@ let jogadorAtual = "A";
 let valorDadoAtual = null;
 let casaSelecionada = null;
 let destinosValidosSelecionados = new Set();
+let pontuacaoA = 0;
+let pontuacaoB = 0;
+
+
+// setas do jogador AZUL (A) — exatamente a grelha que estás a desenhar
+function getCellArrowsA(i, j) {
+  if (i === 0) {
+    if (j === 0) return ["↙"];
+    if (j === colunas - 1) return ["↖"];
+    return ["←"];
+  }
+  if (i === 1) {
+    if (j === 0) return ["↘", "↗"];
+    if (j === colunas - 1) return ["↗", "↘"];
+    return ["→"];
+  }
+  if (i === 2) {
+    if (j === 0) return ["↖"];
+    if (j === colunas - 1) return ["↙", "↖"];
+    return ["←"];
+  }
+  // i === 3
+  if (j === colunas - 1) return ["↗"];
+  return ["→"];
+}
+
+// mapeamento espelhado para o VERMELHO (B)
+const mirrorMap = {
+  "←": "→", "→": "←", "↑": "↑", "↓": "↓",
+  "↖": "↗", "↗": "↖", "↘": "↙", "↙": "↘"
+};
+
+// devolve as setas aplicáveis ao "player" na célula (i,j)
+function getCellArrows(i, j, player) {
+  const base = getCellArrowsA(i, j);
+  if (player === "A") return base;
+  // espelhar para B
+  return base.map(s => mirrorMap[s] || s);
+}
+
+// um passo a partir de (i,j) numa direção (para jogador A; B já vem espelhado)
+function stepFrom(i, j, dir) {
+  switch (dir) {
+    case "←": return { i, j: j - 1 };
+    case "→": return { i, j: j + 1 };
+    case "↑": return { i: i - 1, j };
+    case "↓": return { i: i + 1, j };
+    case "↖": return { i: i - 1, j: j - 1 };
+    case "↗": return { i: i - 1, j: j + 1 };
+    case "↘": return { i: i + 1, j: j + 1 };
+    case "↙": return { i: i + 1, j: j - 1 };
+    default: return null;
+  }
+}
+
+function dentro(i, j) {
+  return i >= 0 && i < linhas && j >= 0 && j < colunas;
+}
+
+function contaPecasDoJogador(owner) {
+  let n = 0;
+  for (let i = 0; i < linhas; i++)
+    for (let j = 0; j < colunas; j++)
+      if (tabuleiroDados[i][j]?.owner === owner) n++;
+  return n;
+}
+
+
 
 // =====================
 // INICIALIZAÇÃO
@@ -231,6 +299,7 @@ function desenharTabuleiro(destinos = []) {
       }
 
       casa.addEventListener("click", () => selecionarCasa(i, j));
+      
       gameGrid.appendChild(casa);
     }
   }
@@ -320,19 +389,237 @@ dadoArea.addEventListener("click", () => {
 function destinosPossiveis(i, j) {
   const peca = tabuleiroDados[i][j];
   if (!peca || valorDadoAtual === null) return [];
-  // Exemplo simples — casas adjacentes horizontais
+
+  const passos = valorDadoAtual;
+  const player = peca.owner;
   const destinos = [];
-  if (j + 1 < colunas) destinos.push({ i, j: j + 1 });
-  return destinos;
+
+  function avancar(ci, cj, k, direcao, sentido) {
+    if (k === passos) {
+      destinos.push({ i: ci, j: cj });
+      return;
+    }
+
+    // avança uma casa
+    let ni = ci;
+    let nj = cj + direcao;
+
+    if (nj < 0 || nj >= colunas) {
+      // chegou ao fim — muda de linha
+      ni += sentido; // sobe (para azul) ou desce (para vermelho)
+      if (ni < 0 || ni >= linhas) return; // saiu do tabuleiro
+      direcao *= -1; // inverte a direção
+      nj = Math.min(Math.max(nj, 0), colunas - 1);
+    }
+
+    // percorre recursivamente
+    avancar(ni, nj, k + 1, direcao, sentido);
+  }
+
+  // parâmetros de movimento
+  let direcao, sentido;
+  if (player === "A") {
+    // jogador azul: começa de baixo (linha 3) e sobe
+    // linhas 3 e 1 → direita; linhas 2 e 0 → esquerda
+    const direita = (i % 2 === 1);
+    direcao = direita ? 1 : -1;
+    sentido = -1; // sobe
+  } else {
+    // jogador vermelho: começa de cima (linha 0) e desce (espelho)
+    const direita = (i % 2 === 0);
+    direcao = direita ? 1 : -1;
+    sentido = 1; // desce
+  }
+
+  avancar(i, j, 0, direcao, sentido);
+
+  // Filtrar casas ocupadas por aliados
+  const finais = destinos.filter(d => {
+    const alvo = tabuleiroDados[d.i][d.j];
+    return !(alvo && alvo.owner === player);
+  });
+
+  return finais;
 }
 
-function selecionarCasa(i, j) {
-  const valor = tabuleiroDados[i][j];
-  if (!valor || valor.owner !== jogadorAtual) return;
 
-  const destinos = destinosPossiveis(i, j);
-  casaSelecionada = { i, j };
-  desenharTabuleiro(destinos);
+function selecionarCasa(i, j) {
+  const clicado = tabuleiroDados[i][j];
+
+  // se não há dado → não pode mover
+  if (valorDadoAtual === null) {
+    mensagemTexto.innerText = "🎲 Lança o dado antes de mover!";
+    return;
+  }
+
+  // não há seleção ainda → escolher peça do jogador atual
+  if (!casaSelecionada) {
+    if (clicado && clicado.owner === jogadorAtual) {
+      casaSelecionada = { i, j };
+      const destinos = destinosPossiveis(i, j);
+      if (destinos.length === 0) {
+        mensagemTexto.innerText = "❌ Sem destinos válidos para este lançamento.";
+        destacarSelecao(i, j);
+        desenharTabuleiro([]); // limpa bolinhas
+      } else {
+        destacarSelecao(i, j);
+        desenharTabuleiro(destinos); // mostra bolinhas
+        // guardar set para clique em destino
+        destinosValidosSelecionados = new Set(destinos.map(d => `${d.i},${d.j}`));
+        mensagemTexto.innerText = `Selecionaste a peça em [${i}, ${j}]. Escolhe um destino.`;
+      }
+    } else {
+      mensagemTexto.innerText = "❌ Escolhe uma das tuas peças.";
+    }
+    return;
+  }
+
+  // já havia peça selecionada → tentar mover
+  const key = `${i},${j}`;
+  if (destinosValidosSelecionados.has(key)) {
+    moverPeca(casaSelecionada.i, casaSelecionada.j, i, j);
+    casaSelecionada = null;
+    destinosValidosSelecionados.clear();
+    return;
+  }
+
+  // trocar seleção para outra peça tua (qualquer)
+  if (clicado && clicado.owner === jogadorAtual) {
+    casaSelecionada = { i, j };
+    const destinos = destinosPossiveis(i, j);
+    destacarSelecao(i, j);
+    desenharTabuleiro(destinos);
+    destinosValidosSelecionados = new Set(destinos.map(d => `${d.i},${d.j}`));
+    mensagemTexto.innerText = `Peça em [${i}, ${j}] selecionada.`;
+  } else {
+    mensagemTexto.innerText = "❌ Não é um destino válido.";
+  }
+}
+
+function moverPeca(i1, j1, i2, j2) {
+  const p1 = tabuleiroDados[i1][j1];
+  if (!p1) return;
+
+  const player = p1.owner;
+  const adversario = player === "A" ? "B" : "A";
+
+  const destinos = destinosPossiveis(i1, j1);
+  if (!destinos.some(({ i, j }) => i === i2 && j === j2)) {
+    mensagemTexto.innerText = "❌ Movimento inválido.";
+    desenharTabuleiro([]);
+    return;
+  }
+
+  // Captura (ganha +1 ponto)
+  const p2 = tabuleiroDados[i2][j2];
+  if (p2 && p2.owner === adversario) {
+    tabuleiroDados[i2][j2] = null;
+    if (player === "A") pontuacaoA += 1;
+    else pontuacaoB += 1;
+  }
+
+  // Mover
+  tabuleiroDados[i2][j2] = { ...p1, moved: true };
+  tabuleiroDados[i1][j1] = null;
+
+  // Peça chega à linha final do adversário → sai do tabuleiro (+2 pontos)
+  const linhaFinal = player === "A" ? 0 : linhas - 1;
+  if (i2 === linhaFinal) {
+    tabuleiroDados[i2][j2] = null;
+    if (player === "A") pontuacaoA += 2;
+    else pontuacaoB += 2;
+    mensagemTexto.innerText = `🚪 ${player === "A" ? "Azul" : "Vermelho"} marcou +2 pontos!`;
+  } else {
+    mensagemTexto.innerText = `✅ ${player === "A" ? "Azul" : "Vermelho"} moveu a peça.`;
+  }
+
+  // Atualizar e desenhar
+  desenharTabuleiro([]);
+  casaSelecionada = null;
+
+  // Verificar fim do jogo
+  const pecasA = contaPecasDoJogador("A");
+  const pecasB = contaPecasDoJogador("B");
+  if (pecasA === 0 || pecasB === 0) {
+    let vencedor = "";
+    if (pontuacaoA > pontuacaoB) vencedor = "🏆 Jogador Azul venceu!";
+    else if (pontuacaoB > pontuacaoA) vencedor = "🏆 Computador venceu!";
+    else vencedor = "🤝 Empate!";
+    mensagemTexto.innerText = `${vencedor} (Azul: ${pontuacaoA} | Vermelho: ${pontuacaoB})`;
+    valorDadoAtual = null;
+    resultadoDado.textContent = "Clique para lançar";
+    return;
+  }
+
+  // alternar turno (1,4,6 repetem)
+  const usado = valorDadoAtual;
+  const repete = [1, 4, 6].includes(usado);
+  valorDadoAtual = null;
+  resultadoDado.textContent = "Clique para lançar";
+
+  if (repete) {
+    mensagemTexto.innerText += ` Jogaste ${usado}. 🎉 Podes jogar novamente.`;
+    if (jogadorAtual === "B") {
+      setTimeout(() => { lancarDado(); setTimeout(jogadaComputador, 600); }, 500);
+    }
+  } else {
+    alternarJogador();
+  }
+}
+
+
+function alternarJogador() {
+  jogadorAtual = (jogadorAtual === "A") ? "B" : "A";
+  mensagemTexto.innerText += ` Agora é a vez do ${jogadorAtual === "A" ? "Jogador Azul" : "Computador (Vermelho)"}.`;
+
+  if (jogadorAtual === "B") {
+    // vez da IA: lança e joga
+    setTimeout(() => {
+      if (valorDadoAtual === null) lancarDado();
+      setTimeout(jogadaComputador, 500);
+    }, 450);
+  }
+}
+
+// === IA: escolhe uma jogada válida aleatória (espelho via getCellArrows)
+function jogadaComputador() {
+  if (jogadorAtual !== "B") return;
+  if (valorDadoAtual === null) return;
+
+  const jogadas = [];
+
+  for (let i = 0; i < linhas; i++) {
+    for (let j = 0; j < colunas; j++) {
+      const p = tabuleiroDados[i][j];
+      if (p?.owner !== "B") continue;
+      const dests = destinosPossiveis(i, j);
+      for (const d of dests) {
+        // não aterrar em aliado
+        const alvo = tabuleiroDados[d.i][d.j];
+        if (alvo && alvo.owner === "B") continue;
+        jogadas.push({ oi: i, oj: j, di: d.i, dj: d.j });
+      }
+    }
+  }
+
+  if (jogadas.length === 0) {
+    // sem jogadas → consumir dado e passar
+    mensagemTexto.innerText = "🤖 O computador não tem jogadas válidas. Passa a vez.";
+    const usado = valorDadoAtual;
+    valorDadoAtual = null;
+    resultadoDado.textContent = "Clique para lançar";
+    const repete = [1, 4, 6].includes(usado);
+    if (repete) {
+      // repete mas não tem jogadas — simplesmente volta a lançar e tentar de novo
+      setTimeout(() => { if (valorDadoAtual === null) lancarDado(); setTimeout(jogadaComputador, 500); }, 450);
+    } else {
+      alternarJogador();
+    }
+    return;
+  }
+
+  const pick = jogadas[Math.floor(Math.random() * jogadas.length)];
+  moverPeca(pick.oi, pick.oj, pick.di, pick.dj);
 }
 
 // =====================
@@ -361,6 +648,4 @@ btnDesistir.addEventListener("click", () => {
   resultadoDado.textContent = "Clique para lançar";
   paus.forEach(pau => pau.classList.remove("escuro")); // todos os paus voltam a claros
 });
-
-
 
