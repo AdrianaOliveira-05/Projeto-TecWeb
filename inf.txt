@@ -261,3 +261,38 @@ btnDesistir.addEventListener("click", () => {
   comandosDurante.classList.add("oculto");
   comandosAntes.classList.remove("oculto");
 });
+
+
+
+
+
+
+
+
+
+
+
+/* SETAS E DESTINOS */
+.seta-fundo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  color: rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+.destino-transparente {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70%;
+  height: 70%;
+  transform: translate(-50%, -50%);
+  border: 2px dashed rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  pointer-events: none;
+}
