@@ -6,3 +6,6 @@ Mensagens
 IA
 
 Ver porquê que quando clicamos em desistir, o dado de paus não inicializa 
+
+
+setas: ← → ↑ ↓ ↖ ↗ ↘ ↙ 
