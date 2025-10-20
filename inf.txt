@@ -10,55 +10,118 @@ IA
 setas: ← → ↑ ↓ ↖ ↗ ↘ ↙ 
 
 
-function selecionarCasa(i, j) {
-  const clicado = tabuleiroDados[i][j];
+function moverPeca(i1, j1, i2, j2) {
+  const p1 = tabuleiroDados[i1][j1];
+  if (!p1) return;
 
-  // se não há dado → não pode mover
-  if (valorDadoAtual === null) {
-    mensagemTexto.innerText = "🎲 Lança o dado antes de mover!";
+  // validação final (defensiva)
+  const destinos = destinosPossiveis(i1, j1);
+  if (!destinos.some(({ i, j }) => i === i2 && j === j2)) {
+    mensagemTexto.innerText = "❌ Movimento inválido.";
+    desenharTabuleiro([]);
     return;
   }
 
-  // não há seleção ainda → escolher peça do jogador atual
-  if (!casaSelecionada) {
-    if (clicado && clicado.owner === jogadorAtual) {
-      casaSelecionada = { i, j };
-      const destinos = destinosPossiveis(i, j);
-      if (destinos.length === 0) {
-        mensagemTexto.innerText = "❌ Sem destinos válidos para este lançamento.";
-        destacarSelecao(i, j);
-        desenharTabuleiro([]); // limpa bolinhas
-      } else {
-        destacarSelecao(i, j);
-        desenharTabuleiro(destinos); // mostra bolinhas
-        // guardar set para clique em destino
-        destinosValidosSelecionados = new Set(destinos.map(d => `${d.i},${d.j}`));
-        mensagemTexto.innerText = `Selecionaste a peça em [${i}, ${j}]. Escolhe um destino.`;
+  // captura se houver inimigo no destino
+  const p2 = tabuleiroDados[i2][j2];
+  if (p2 && p2.owner !== p1.owner) {
+    tabuleiroDados[i2][j2] = null;
+  }
+
+  // mover
+  tabuleiroDados[i2][j2] = { ...p1, moved: true };
+  tabuleiroDados[i1][j1] = null;
+
+  // sair do tabuleiro se terminou na linha final do adversário
+  const linhaFinalDoAdversario = (p1.owner === "A") ? 0 : (linhas - 1);
+  if (i2 === linhaFinalDoAdversario) {
+    tabuleiroDados[i2][j2] = null; // peça sai
+    mensagemTexto.innerText = "🚪 A peça saiu do tabuleiro.";
+  } else {
+    mensagemTexto.innerText = `✅ Peça movida para [${i2}, ${j2}].`;
+  }
+
+  desenharTabuleiro([]);
+  casaSelecionada = null;
+
+  // fim de jogo?
+  const pecasA = contaPecasDoJogador("A");
+  const pecasB = contaPecasDoJogador("B");
+  if (pecasA === 0 || pecasB === 0) {
+    const vencedor = pecasA > 0 ? "Jogador Azul (A)" : "Computador (B)";
+    mensagemTexto.innerText = `🏁 Fim do jogo! Venceu: ${vencedor}`;
+    valorDadoAtual = null;
+    resultadoDado.textContent = "Clique para lançar";
+    return;
+  }
+
+  // gerir turno (1,4,6 repetem)
+  const usado = valorDadoAtual;
+  const repete = [1, 4, 6].includes(usado);
+  valorDadoAtual = null;
+  resultadoDado.textContent = "Clique para lançar";
+
+  if (repete) {
+    mensagemTexto.innerText += ` Jogaste ${usado}. 🎉 Podes voltar a lançar.`;
+    if (jogadorAtual === "B") {
+      // IA repete automaticamente
+      setTimeout(() => { if (valorDadoAtual === null) lancarDado(); setTimeout(jogadaComputador, 500); }, 450);
+    }
+  } else {
+    alternarJogador();
+  }
+}
+
+function alternarJogador() {
+  jogadorAtual = (jogadorAtual === "A") ? "B" : "A";
+  mensagemTexto.innerText += ` Agora é a vez do ${jogadorAtual === "A" ? "Jogador Azul" : "Computador (Vermelho)"}.`;
+
+  if (jogadorAtual === "B") {
+    // vez da IA: lança e joga
+    setTimeout(() => {
+      if (valorDadoAtual === null) lancarDado();
+      setTimeout(jogadaComputador, 500);
+    }, 450);
+  }
+}
+
+// === IA: escolhe uma jogada válida aleatória (espelho via getCellArrows)
+function jogadaComputador() {
+  if (jogadorAtual !== "B") return;
+  if (valorDadoAtual === null) return;
+
+  const jogadas = [];
+
+  for (let i = 0; i < linhas; i++) {
+    for (let j = 0; j < colunas; j++) {
+      const p = tabuleiroDados[i][j];
+      if (p?.owner !== "B") continue;
+      const dests = destinosPossiveis(i, j);
+      for (const d of dests) {
+        // não aterrar em aliado
+        const alvo = tabuleiroDados[d.i][d.j];
+        if (alvo && alvo.owner === "B") continue;
+        jogadas.push({ oi: i, oj: j, di: d.i, dj: d.j });
       }
+    }
+  }
+
+  if (jogadas.length === 0) {
+    // sem jogadas → consumir dado e passar
+    mensagemTexto.innerText = "🤖 O computador não tem jogadas válidas. Passa a vez.";
+    const usado = valorDadoAtual;
+    valorDadoAtual = null;
+    resultadoDado.textContent = "Clique para lançar";
+    const repete = [1, 4, 6].includes(usado);
+    if (repete) {
+      // repete mas não tem jogadas — simplesmente volta a lançar e tentar de novo
+      setTimeout(() => { if (valorDadoAtual === null) lancarDado(); setTimeout(jogadaComputador, 500); }, 450);
     } else {
-      mensagemTexto.innerText = "❌ Escolhe uma das tuas peças.";
+      alternarJogador();
     }
     return;
   }
 
-  // já havia peça selecionada → tentar mover
-  const key = `${i},${j}`;
-  if (destinosValidosSelecionados.has(key)) {
-    moverPeca(casaSelecionada.i, casaSelecionada.j, i, j);
-    casaSelecionada = null;
-    destinosValidosSelecionados.clear();
-    return;
-  }
-
-  // trocar seleção para outra peça tua (qualquer)
-  if (clicado && clicado.owner === jogadorAtual) {
-    casaSelecionada = { i, j };
-    const destinos = destinosPossiveis(i, j);
-    destacarSelecao(i, j);
-    desenharTabuleiro(destinos);
-    destinosValidosSelecionados = new Set(destinos.map(d => `${d.i},${d.j}`));
-    mensagemTexto.innerText = `Peça em [${i}, ${j}] selecionada.`;
-  } else {
-    mensagemTexto.innerText = "❌ Não é um destino válido.";
-  }
+  const pick = jogadas[Math.floor(Math.random() * jogadas.length)];
+  moverPeca(pick.oi, pick.oj, pick.di, pick.dj);
 }
