@@ -10,67 +10,43 @@ IA
 setas: ← → ↑ ↓ ↖ ↗ ↘ ↙ 
 
 
-// === Helpers de direções e grelha de setas ===
+// =====================
+// MOVIMENTO E DESTINOS
+// =====================
+function destinosPossiveis(i, j) {
+  const peca = tabuleiroDados[i][j];
+  if (!peca || valorDadoAtual === null) return [];
 
-// setas do jogador AZUL (A) — exatamente a grelha que estás a desenhar
-function getCellArrowsA(i, j) {
-  if (i === 0) {
-    if (j === 0) return ["↙"];
-    if (j === colunas - 1) return ["↖"];
-    return ["←"];
+  const steps = valorDadoAtual;
+  const player = peca.owner;
+
+  // DFS/BFS de caminhos até "steps"
+  const finais = new Set();
+
+  function explore(ci, cj, k) {
+    if (k === steps) {
+      // não pode terminar numa casa de aliado
+      const alvo = tabuleiroDados[ci][cj];
+      if (!(alvo && alvo.owner === player)) {
+        finais.add(`${ci},${cj}`);
+      }
+      return;
+    }
+    const dirs = getCellArrows(ci, cj, player);
+    for (const d of dirs) {
+      const nxt = stepFrom(ci, cj, d);
+      if (!nxt || !dentro(nxt.i, nxt.j)) continue; // caminho inválido
+      explore(nxt.i, nxt.j, k + 1);
+    }
   }
-  if (i === 1) {
-    if (j === 0) return ["↘", "↗"];
-    if (j === colunas - 1) return ["↗", "↘"];
-    return ["→"];
+
+  explore(i, j, 0);
+
+  // converter para lista [{i,j}]
+  const out = [];
+  for (const key of finais) {
+    const [si, sj] = key.split(",").map(Number);
+    out.push({ i: si, j: sj });
   }
-  if (i === 2) {
-    if (j === 0) return ["↖"];
-    if (j === colunas - 1) return ["↙", "↖"];
-    return ["←"];
-  }
-  // i === 3
-  if (j === colunas - 1) return ["↗"];
-  return ["→"];
-}
-
-// mapeamento espelhado para o VERMELHO (B)
-const mirrorMap = {
-  "←": "→", "→": "←", "↑": "↑", "↓": "↓",
-  "↖": "↗", "↗": "↖", "↘": "↙", "↙": "↘"
-};
-
-// devolve as setas aplicáveis ao "player" na célula (i,j)
-function getCellArrows(i, j, player) {
-  const base = getCellArrowsA(i, j);
-  if (player === "A") return base;
-  // espelhar para B
-  return base.map(s => mirrorMap[s] || s);
-}
-
-// um passo a partir de (i,j) numa direção (para jogador A; B já vem espelhado)
-function stepFrom(i, j, dir) {
-  switch (dir) {
-    case "←": return { i, j: j - 1 };
-    case "→": return { i, j: j + 1 };
-    case "↑": return { i: i - 1, j };
-    case "↓": return { i: i + 1, j };
-    case "↖": return { i: i - 1, j: j - 1 };
-    case "↗": return { i: i - 1, j: j + 1 };
-    case "↘": return { i: i + 1, j: j + 1 };
-    case "↙": return { i: i + 1, j: j - 1 };
-    default: return null;
-  }
-}
-
-function dentro(i, j) {
-  return i >= 0 && i < linhas && j >= 0 && j < colunas;
-}
-
-function contaPecasDoJogador(owner) {
-  let n = 0;
-  for (let i = 0; i < linhas; i++)
-    for (let j = 0; j < colunas; j++)
-      if (tabuleiroDados[i][j]?.owner === owner) n++;
-  return n;
+  return out;
 }
