@@ -10,43 +10,55 @@ IA
 setas: ← → ↑ ↓ ↖ ↗ ↘ ↙ 
 
 
-// =====================
-// MOVIMENTO E DESTINOS
-// =====================
-function destinosPossiveis(i, j) {
-  const peca = tabuleiroDados[i][j];
-  if (!peca || valorDadoAtual === null) return [];
+function selecionarCasa(i, j) {
+  const clicado = tabuleiroDados[i][j];
 
-  const steps = valorDadoAtual;
-  const player = peca.owner;
+  // se não há dado → não pode mover
+  if (valorDadoAtual === null) {
+    mensagemTexto.innerText = "🎲 Lança o dado antes de mover!";
+    return;
+  }
 
-  // DFS/BFS de caminhos até "steps"
-  const finais = new Set();
-
-  function explore(ci, cj, k) {
-    if (k === steps) {
-      // não pode terminar numa casa de aliado
-      const alvo = tabuleiroDados[ci][cj];
-      if (!(alvo && alvo.owner === player)) {
-        finais.add(`${ci},${cj}`);
+  // não há seleção ainda → escolher peça do jogador atual
+  if (!casaSelecionada) {
+    if (clicado && clicado.owner === jogadorAtual) {
+      casaSelecionada = { i, j };
+      const destinos = destinosPossiveis(i, j);
+      if (destinos.length === 0) {
+        mensagemTexto.innerText = "❌ Sem destinos válidos para este lançamento.";
+        destacarSelecao(i, j);
+        desenharTabuleiro([]); // limpa bolinhas
+      } else {
+        destacarSelecao(i, j);
+        desenharTabuleiro(destinos); // mostra bolinhas
+        // guardar set para clique em destino
+        destinosValidosSelecionados = new Set(destinos.map(d => `${d.i},${d.j}`));
+        mensagemTexto.innerText = `Selecionaste a peça em [${i}, ${j}]. Escolhe um destino.`;
       }
-      return;
+    } else {
+      mensagemTexto.innerText = "❌ Escolhe uma das tuas peças.";
     }
-    const dirs = getCellArrows(ci, cj, player);
-    for (const d of dirs) {
-      const nxt = stepFrom(ci, cj, d);
-      if (!nxt || !dentro(nxt.i, nxt.j)) continue; // caminho inválido
-      explore(nxt.i, nxt.j, k + 1);
-    }
+    return;
   }
 
-  explore(i, j, 0);
-
-  // converter para lista [{i,j}]
-  const out = [];
-  for (const key of finais) {
-    const [si, sj] = key.split(",").map(Number);
-    out.push({ i: si, j: sj });
+  // já havia peça selecionada → tentar mover
+  const key = `${i},${j}`;
+  if (destinosValidosSelecionados.has(key)) {
+    moverPeca(casaSelecionada.i, casaSelecionada.j, i, j);
+    casaSelecionada = null;
+    destinosValidosSelecionados.clear();
+    return;
   }
-  return out;
+
+  // trocar seleção para outra peça tua (qualquer)
+  if (clicado && clicado.owner === jogadorAtual) {
+    casaSelecionada = { i, j };
+    const destinos = destinosPossiveis(i, j);
+    destacarSelecao(i, j);
+    desenharTabuleiro(destinos);
+    destinosValidosSelecionados = new Set(destinos.map(d => `${d.i},${d.j}`));
+    mensagemTexto.innerText = `Peça em [${i}, ${j}] selecionada.`;
+  } else {
+    mensagemTexto.innerText = "❌ Não é um destino válido.";
+  }
 }
