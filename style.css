@@ -294,3 +294,140 @@ footer {
     display: none !important;
 }
 
+/* Setas dentro das peças */
+.arrow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    font-size: 22px;
+    color: rgba(255,255,255,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; /* não interfere com cliques */
+}
+.cell {
+    position: relative; /* necessário para posicionar as setas dentro */
+}
+/* Estilo das setas internas nas casas */
+.seta-fundo {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    color: rgba(0,0,0,0.25);
+    pointer-events: none;
+}
+
+.cell {
+    position: relative;
+    border: 1px solid #6b4226;
+    background: #fffdf5;
+}
+
+/* Estilo das peças circulares */
+.peca {
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 4px rgba(0,0,0,0.4);
+    opacity: 0.9;
+}
+/* === SETAS DO TABULEIRO === */
+.cell {
+  position: relative;
+  border: 1px solid #6b4226;
+  background: #fffdf5;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* linha base das setas */
+.seta::before,
+.seta::after {
+  content: "";
+  position: absolute;
+  background: rgba(0, 0, 0, 0.25);
+  transition: 0.2s;
+}
+
+/* seta para a direita */
+.seta-direita::before {
+  width: 60%;
+  height: 2px;
+  top: 50%;
+  left: 20%;
+  transform: translateY(-50%);
+}
+.seta-direita::after {
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid rgba(0, 0, 0, 0.25);
+  border-right: 2px solid rgba(0, 0, 0, 0.25);
+  right: 18%;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+/* seta para a esquerda */
+.seta-esquerda::before {
+  width: 60%;
+  height: 2px;
+  top: 50%;
+  left: 20%;
+  transform: translateY(-50%);
+}
+.seta-esquerda::after {
+  width: 8px;
+  height: 8px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.25);
+  border-left: 2px solid rgba(0, 0, 0, 0.25);
+  left: 18%;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+/* seta curva descendo para baixo (↘️) */
+.seta-curva-baixo::before {
+  width: 18px;
+  height: 18px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.25);
+  border-right: 2px solid rgba(0, 0, 0, 0.25);
+  border-radius: 0 0 10px 0;
+  bottom: 20%;
+  right: 20%;
+}
+
+/* seta curva subindo para cima (↖️) */
+.seta-curva-cima::before {
+  width: 18px;
+  height: 18px;
+  border-top: 2px solid rgba(0, 0, 0, 0.25);
+  border-left: 2px solid rgba(0, 0, 0, 0.25);
+  border-radius: 10px 0 0 0;
+  top: 20%;
+  left: 20%;
+}
+
+/* === PEÇAS === */
+.peca {
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+}
+
