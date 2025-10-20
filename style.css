@@ -316,18 +316,20 @@ footer {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 16px;
     color: rgba(0, 0, 0, 0.25);
+    font-size: 16px;
     pointer-events: none;
     user-select: none;
 }
 .seta-dupla .seta1{
     top: 25%;
     font-size:14 px;
+    position: absolute;
 }
 .seta-dupla .seta2{
     bottom: 25%;
     font-size:14 px;
+    position: absolute;
 }
 
 .destino-transparente {
@@ -339,7 +341,7 @@ footer {
     transform: translate(-50%, -50%);
     border: 2px dashed rgba(0, 0, 0, 0.2);
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgb(170, 170, 170, 0.3);
     pointer-events: none;
 }
 
