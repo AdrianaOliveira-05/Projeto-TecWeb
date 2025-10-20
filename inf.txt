@@ -1,4 +1,8 @@
 O que falta:
--Mudar setas
--Fazer o jogo em si
--Implementação minimax 
+Tabuleiro:
+-Codificação
+-Modos
+Mensagens
+IA
+
+Ver porquê que quando clicamos em desistir, o dado de paus não inicializa 
