@@ -10,58 +10,73 @@ IA
 setas: ← → ↑ ↓ ↖ ↗ ↘ ↙ 
 
 
-function destinosPossiveis(i, j) {
-  const peca = tabuleiroDados[i][j];
-  if (!peca || valorDadoAtual === null) return [];
+function moverPeca(i1, j1, i2, j2) {
+  const p1 = tabuleiroDados[i1][j1];
+  if (!p1) return;
 
-  const passos = valorDadoAtual;
-  const player = peca.owner;
-  const destinos = [];
+  const player = p1.owner;
+  const adversario = player === "A" ? "B" : "A";
 
-  function avancar(ci, cj, k, direcao, sentido) {
-    if (k === passos) {
-      destinos.push({ i: ci, j: cj });
-      return;
-    }
-
-    // avança uma casa
-    let ni = ci;
-    let nj = cj + direcao;
-
-    if (nj < 0 || nj >= colunas) {
-      // chegou ao fim — muda de linha
-      ni += sentido; // sobe (para azul) ou desce (para vermelho)
-      if (ni < 0 || ni >= linhas) return; // saiu do tabuleiro
-      direcao *= -1; // inverte a direção
-      nj = Math.min(Math.max(nj, 0), colunas - 1);
-    }
-
-    // percorre recursivamente
-    avancar(ni, nj, k + 1, direcao, sentido);
+  const destinos = destinosPossiveis(i1, j1);
+  if (!destinos.some(({ i, j }) => i === i2 && j === j2)) {
+    mensagemTexto.innerText = "❌ Movimento inválido.";
+    desenharTabuleiro([]);
+    return;
   }
 
-  // parâmetros de movimento
-  let direcao, sentido;
-  if (player === "A") {
-    // jogador azul: começa de baixo (linha 3) e sobe
-    // linhas 3 e 1 → direita; linhas 2 e 0 → esquerda
-    const direita = (i % 2 === 1);
-    direcao = direita ? 1 : -1;
-    sentido = -1; // sobe
+  // Captura (ganha +1 ponto)
+  const p2 = tabuleiroDados[i2][j2];
+  if (p2 && p2.owner === adversario) {
+    tabuleiroDados[i2][j2] = null;
+    if (player === "A") pontuacaoA += 1;
+    else pontuacaoB += 1;
+  }
+
+  // Mover
+  tabuleiroDados[i2][j2] = { ...p1, moved: true };
+  tabuleiroDados[i1][j1] = null;
+
+  // Peça chega à linha final do adversário → sai do tabuleiro (+2 pontos)
+  const linhaFinal = player === "A" ? 0 : linhas - 1;
+  if (i2 === linhaFinal) {
+    tabuleiroDados[i2][j2] = null;
+    if (player === "A") pontuacaoA += 2;
+    else pontuacaoB += 2;
+    mensagemTexto.innerText = `🚪 ${player === "A" ? "Azul" : "Vermelho"} marcou +2 pontos!`;
   } else {
-    // jogador vermelho: começa de cima (linha 0) e desce (espelho)
-    const direita = (i % 2 === 0);
-    direcao = direita ? 1 : -1;
-    sentido = 1; // desce
+    mensagemTexto.innerText = `✅ ${player === "A" ? "Azul" : "Vermelho"} moveu a peça.`;
   }
 
-  avancar(i, j, 0, direcao, sentido);
+  // Atualizar e desenhar
+  desenharTabuleiro([]);
+  casaSelecionada = null;
 
-  // Filtrar casas ocupadas por aliados
-  const finais = destinos.filter(d => {
-    const alvo = tabuleiroDados[d.i][d.j];
-    return !(alvo && alvo.owner === player);
-  });
+  // Verificar fim do jogo
+  const pecasA = contaPecasDoJogador("A");
+  const pecasB = contaPecasDoJogador("B");
+  if (pecasA === 0 || pecasB === 0) {
+    let vencedor = "";
+    if (pontuacaoA > pontuacaoB) vencedor = "🏆 Jogador Azul venceu!";
+    else if (pontuacaoB > pontuacaoA) vencedor = "🏆 Computador venceu!";
+    else vencedor = "🤝 Empate!";
+    mensagemTexto.innerText = `${vencedor} (Azul: ${pontuacaoA} | Vermelho: ${pontuacaoB})`;
+    valorDadoAtual = null;
+    resultadoDado.textContent = "Clique para lançar";
+    return;
+  }
 
-  return finais;
+  // alternar turno (1,4,6 repetem)
+  const usado = valorDadoAtual;
+  const repete = [1, 4, 6].includes(usado);
+  valorDadoAtual = null;
+  resultadoDado.textContent = "Clique para lançar";
+
+  if (repete) {
+    mensagemTexto.innerText += ` Jogaste ${usado}. 🎉 Podes jogar novamente.`;
+    if (jogadorAtual === "B") {
+      setTimeout(() => { lancarDado(); setTimeout(jogadaComputador, 600); }, 500);
+    }
+  } else {
+    alternarJogador();
+  }
 }
