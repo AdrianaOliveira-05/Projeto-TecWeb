@@ -18,6 +18,17 @@ const paus = document.querySelectorAll(".pau");
 const resultadoDado = document.getElementById("resultadoDado");
 const mensagemTexto = document.getElementById("mensagemTexto");
 
+// PAINÉIS
+const painelInstrucoes = document.getElementById("instrucoes");
+const painelClassificacoes = document.getElementById("classificacoes");
+const botoesFechar = document.querySelectorAll(".btnFechar");
+
+const btnVerInstrucoes = document.getElementById("btnVerInstrucoes");
+const btnVerInstrucoes2 = document.getElementById("btnVerInstrucoes2");
+const btnVerClassificacoes = document.getElementById("btnVerClassificacoes");
+const btnVerClassificacoes2 = document.getElementById("btnVerClassificacoes2");
+
+
 // =====================
 // ESTADO DO JOGO
 // =====================
@@ -47,7 +58,48 @@ btnLogin.addEventListener("click", () => {
   identificacao.classList.add("oculto");
   configuracao.classList.remove("oculto");
   comandos.classList.remove("oculto");
+  comandosAntes.classList.remove("oculto");
+  comandosDurante.classList.add("oculto");
+  
 });
+
+// =====================
+// PAINÉIS
+// =====================
+function abrirPainel(painel) {
+  painel.classList.remove("oculto");
+}
+function fecharPainel() {
+  painelInstrucoes.classList.add("oculto");
+  painelClassificacoes.classList.add("oculto");
+}
+
+btnVerInstrucoes.addEventListener("click", () => abrirPainel(painelInstrucoes));
+btnVerInstrucoes2.addEventListener("click", () => abrirPainel(painelInstrucoes));
+btnVerClassificacoes.addEventListener("click", () => abrirPainel(painelClassificacoes));
+btnVerClassificacoes2.addEventListener("click", () => abrirPainel(painelClassificacoes));
+botoesFechar.forEach(btn => btn.addEventListener("click", fecharPainel));
+
+// =====================
+// CLASSIFICAÇÕES (placeholder)
+// =====================
+function adicionarResultado(nome, data, dificuldade, tempo, resultado) {
+  const tabela = document.querySelector("#tabelaClassificacoes tbody");
+  const novaLinha = document.createElement("tr");
+  const posicao = tabela ? tabela.rows.length + 1 : 1;
+  if (!tabela) return;
+
+  novaLinha.innerHTML = `
+    <td>${posicao}</td>
+    <td>${nome}</td>
+    <td>${data}</td>
+    <td>${dificuldade}</td>
+    <td>${tempo}</td>
+    <td>${resultado}</td>
+  `;
+  tabela.appendChild(novaLinha);
+}
+
 
 // =====================
 // TABULEIRO E PATH
@@ -82,13 +134,26 @@ function indexToCoord(idx) {
 // =====================
 function gerarTabuleiro() {
   gameGrid.innerHTML = "";
-  linhas = 4;
-  colunas = 9;
 
+  // Obter tamanho do primeiro <select> da secção configuração (ex: "4x9")
+  const selectTamanho = configuracao.querySelector("select");
+  const numeros = selectTamanho.value.match(/\d+/g);
+  linhas = parseInt(numeros[0], 10);
+  colunas = parseInt(numeros[1], 10);
+
+  if (colunas % 2 === 0) {
+    mensagemTexto.innerText = "⚠️ O número de colunas deve ser ímpar. Escolhe outro tamanho!";
+    return false;
+  }
+
+  // Preparar path
   construirPath(linhas, colunas);
+
   inicializarTabuleiro(linhas, colunas);
+  document.getElementById("mensagemTexto").innerText = "Jogo iniciado! Boa sorte!";
+
   gameGrid.style.gridTemplateColumns = `repeat(${colunas}, 40px)`;
-  mensagemTexto.innerText = "Jogo iniciado!";
+  return true;
 }
 
 // =====================
@@ -171,6 +236,22 @@ function desenharTabuleiro(destinos = []) {
   }
 }
 
+function destacarSelecao(i, j) {
+  // Tirar qualquer destaque anterior
+  Array.from(gameGrid.children).forEach(div => {
+    div.style.outline = "none";
+    div.style.boxShadow = "none";
+  });
+  
+  // Destacar origem
+  const idx = i * colunas + j;
+  const origemDiv = gameGrid.children[idx];
+  if (origemDiv) {
+    origemDiv.style.outline = "2px solid #333";
+    origemDiv.style.boxShadow = "0 0 8px rgba(0,0,0,0.35)";
+  }
+}
+
 // =====================
 // ESTADO INICIAL
 // =====================
@@ -193,7 +274,9 @@ function inicializarTabuleiro(l, c) {
 // DADO DE PAUS
 // =====================
 function lancarDado() {
+  // 4 paus: claro (0) / escuro (1)
   let claros = 0;
+
   paus.forEach(pau => {
     const ladoClaro = Math.random() < 0.5;
     if (ladoClaro) {
@@ -203,18 +286,32 @@ function lancarDado() {
       pau.classList.add("escuro");
     }
   });
+
+  // Converter número de claros em valor do Tâb
   switch (claros) {
-    case 0: valorDadoAtual = 6; break;
-    case 1: valorDadoAtual = 1; break;
-    case 2: valorDadoAtual = 2; break;
-    case 3: valorDadoAtual = 3; break;
-    case 4: valorDadoAtual = 4; break;
+    case 0: valorDadoAtual = 6; break; // Sitteh
+    case 1: valorDadoAtual = 1; break; // Tâb
+    case 2: valorDadoAtual = 2; break; // Itneyn
+    case 3: valorDadoAtual = 3; break; // Teláteh
+    case 4: valorDadoAtual = 4; break; // Arba'ah
   }
+
   resultadoDado.textContent = `Resultado: ${valorDadoAtual}`;
+  mensagemTexto.innerHTML = `<strong>Saiu ${valorDadoAtual}</strong> — ${[1,4,6].includes(valorDadoAtual) ? "repete o turno se jogares." : "depois passa a vez."}`;
+
+  // pequeno efeito visual
+  dadoArea.style.transform = "scale(1.08)";
+  setTimeout(() => dadoArea.style.transform = "scale(1)", 160);
 }
+
+// Clique no dado
 dadoArea.addEventListener("click", () => {
-  if (valorDadoAtual === null) lancarDado();
-  else mensagemTexto.innerText = "Já tens um lançamento ativo!";
+  // só lança se não houver um valor pendente
+  if (valorDadoAtual !== null) {
+    mensagemTexto.innerText = "Já tens um lançamento ativo. Usa-o antes de lançar de novo.";
+    return;
+  }
+  lancarDado();
 });
 
 // =====================
@@ -264,3 +361,6 @@ btnDesistir.addEventListener("click", () => {
   resultadoDado.textContent = "Clique para lançar";
   paus.forEach(pau => pau.classList.remove("escuro")); // todos os paus voltam a claros
 });
+
+
+
