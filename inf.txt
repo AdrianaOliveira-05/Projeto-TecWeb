@@ -6,3 +6,23 @@ O que falta:
 - aparecer mensagens quando as jogadas nao sao possiveis
 - só começa o jogo quando dá 1 o dado
 - uma peça nao pode avançar outra, ainda que da mesma cor
+
+
+// Restrição: primeira jogada só pode ocorrer com dado = 1
+if (jogadorAtual === "A") {
+  const algumaMovida = tabuleiroDados.flat().some(p => p?.owner === "A" && p.moved);
+  // Se nenhuma peça azul se moveu ainda
+  if (!algumaMovida) {
+    if (valorDadoAtual !== 1) {
+      mensagemTexto.innerText = "⚠️ O dado não deu 1. Não podes começar. Passa a vez ao computador.";
+      // consome o dado e passa turno
+      valorDadoAtual = null;
+      resultadoDado.textContent = "Clique para lançar";
+      setTimeout(() => alternarJogador(), 1000);
+      return;
+    } else {
+      // ✅ dado = 1 → pode começar o jogo normalmente
+      mensagemTexto.innerText = "🎯 Dado = 1! Podes começar o jogo.";
+    }
+  }
+}
