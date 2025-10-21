@@ -4,3 +4,50 @@ O que falta:
 - existem modo facil, medio e dificil em IA, temos de alterar isso
 - meter as jogadas da IA a acontecer mais devagar, para se perceber melhor o que esta a acontecer
 - aparecer mensagens quando as jogadas nao sao possiveis
+- 
+
+function jogadaComputador() {
+  if (jogadorAtual !== "B") return;
+
+  // Passo 1: lançar o dado devagar
+  mensagemTexto.innerText = "🤖 O computador está a lançar o dado...";
+  setTimeout(() => {
+    lancarDado();
+
+    setTimeout(() => {
+      // Passo 2: pensar na jogada
+      const jogadas = [];
+      for (let i = 0; i < linhas; i++) {
+        for (let j = 0; j < colunas; j++) {
+          const p = tabuleiroDados[i][j];
+          if (p?.owner !== "B") continue;
+          const destinos = destinosPossiveis(i, j);
+          for (const d of destinos) {
+            const alvo = tabuleiroDados[d.i][d.j];
+            if (alvo && alvo.owner === "B") continue;
+            jogadas.push({ oi: i, oj: j, di: d.i, dj: d.j });
+          }
+        }
+      }
+
+      if (jogadas.length === 0) {
+        mensagemTexto.innerText = "🤖 O computador não tem jogadas válidas. Passa a vez.";
+        valorDadoAtual = null;
+        resultadoDado.textContent = "Clique para lançar";
+        alternarJogador();
+        return;
+      }
+
+      // Passo 3: mostrar escolha e mover lentamente
+      const jogada = jogadas[Math.floor(Math.random() * jogadas.length)];
+      mensagemTexto.innerText = `🤖 O computador escolheu a peça em [${jogada.oi}, ${jogada.oj}]...`;
+
+      // pequena pausa antes do movimento
+      setTimeout(() => {
+        moverPeca(jogada.oi, jogada.oj, jogada.di, jogada.dj);
+      }, 2000);
+
+    }, 1800); // espera entre o lançamento e a escolha
+  }, 800); // espera antes de lançar o dado
+}
+
