@@ -8,21 +8,82 @@ O que falta:
 - uma peça nao pode avançar outra, ainda que da mesma cor
 
 
-// Restrição: primeira jogada só pode ocorrer com dado = 1
-if (jogadorAtual === "A") {
-  const algumaMovida = tabuleiroDados.flat().some(p => p?.owner === "A" && p.moved);
-  // Se nenhuma peça azul se moveu ainda
-  if (!algumaMovida) {
-    if (valorDadoAtual !== 1) {
-      mensagemTexto.innerText = "⚠️ O dado não deu 1. Não podes começar. Passa a vez ao computador.";
-      // consome o dado e passa turno
-      valorDadoAtual = null;
-      resultadoDado.textContent = "Clique para lançar";
-      setTimeout(() => alternarJogador(), 1000);
-      return;
-    } else {
-      // ✅ dado = 1 → pode começar o jogo normalmente
-      mensagemTexto.innerText = "🎯 Dado = 1! Podes começar o jogo.";
-    }
-  }
+function jogadaComputador() {
+  if (jogadorAtual !== "B") return;
+
+  // Passo 1: lançar o dado de paus lentamente
+  mensagemTexto.innerText = "🤖 O computador está a lançar o dado...";
+  setTimeout(() => {
+    // Lança o dado
+    lancarDado();
+
+    // Espera um pouco para mostrar o valor do dado
+    setTimeout(() => {
+      if (valorDadoAtual === null) return;
+
+      // ======================
+      // RESTRIÇÃO: PRIMEIRA JOGADA PRECISA DE 1
+      // ======================
+      const algumaMovidaB = tabuleiroDados.flat().some(p => p?.owner === "B" && p.moved);
+      if (!algumaMovidaB && valorDadoAtual !== 1) {
+        mensagemTexto.innerText = "🤖 O computador não pode começar (não saiu 1). Passa a vez para ti.";
+        valorDadoAtual = null;
+        resultadoDado.textContent = "Clique para lançar";
+        setTimeout(() => alternarJogador(), 1500);
+        return;
+      }
+
+      // ======================
+      // GERAR JOGADAS VÁLIDAS
+      // ======================
+      const jogadas = [];
+
+      for (let i = 0; i < linhas; i++) {
+        for (let j = 0; j < colunas; j++) {
+          const p = tabuleiroDados[i][j];
+          if (p?.owner !== "B") continue;
+          const dests = destinosPossiveis(i, j);
+          for (const d of dests) {
+            // não aterrar em aliado
+            const alvo = tabuleiroDados[d.i][d.j];
+            if (alvo && alvo.owner === "B") continue;
+            jogadas.push({ oi: i, oj: j, di: d.i, dj: d.j });
+          }
+        }
+      }
+
+      if (jogadas.length === 0) {
+        // sem jogadas → consumir dado e passar
+        mensagemTexto.innerText = "🤖 O computador não tem jogadas válidas. Passa a vez.";
+        const usado = valorDadoAtual;
+        valorDadoAtual = null;
+        resultadoDado.textContent = "Clique para lançar";
+        const repete = [1, 4, 6].includes(usado);
+        if (repete) {
+          // repete mas não tem jogadas — simplesmente volta a lançar e tentar de novo
+          setTimeout(() => {
+            if (valorDadoAtual === null) lancarDado();
+            setTimeout(jogadaComputador, 700);
+          }, 600);
+        } else {
+          setTimeout(() => alternarJogador(), 1000);
+        }
+        return;
+      }
+
+      // ======================
+      // ESCOLHER UMA JOGADA ALEATÓRIA
+      // ======================
+      const pick = jogadas[Math.floor(Math.random() * jogadas.length)];
+
+      mensagemTexto.innerText = `🤖 O computador escolheu mover a peça de [${pick.oi}, ${pick.oj}] para [${pick.di}, ${pick.dj}]...`;
+
+      // pequena pausa antes do movimento para ser visível
+      setTimeout(() => {
+        moverPeca(pick.oi, pick.oj, pick.di, pick.dj);
+      }, 2000); // espera 2s antes de mover
+
+    }, 2000); // espera 2s entre lançar o dado e decidir a jogada
+
+  }, 800); // espera 0.8s antes de começar a lançar o dado
 }
