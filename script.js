@@ -30,7 +30,7 @@ const btnVerClassificacoes2 = document.getElementById("btnVerClassificacoes2");
 
 
 // =====================
-// ESTADO DO JOGO
+//     ESTADO DO JOGO
 // =====================
 let tabuleiroDados = [];
 let linhas = 4;
@@ -43,6 +43,8 @@ let casaSelecionada = null;
 let destinosValidosSelecionados = new Set();
 let pontuacaoA = 0;
 let pontuacaoB = 0;
+let jogoIniciado = false;
+
 
 
 // setas do jogador AZUL (A) — exatamente a grelha que estás a desenhar
@@ -111,7 +113,7 @@ function contaPecasDoJogador(owner) {
 
 
 // =====================
-// INICIALIZAÇÃO
+//      INICIALIZAÇÃO
 // =====================
 window.addEventListener("DOMContentLoaded", () => {
   identificacao.classList.remove("oculto");
@@ -132,7 +134,7 @@ btnLogin.addEventListener("click", () => {
 });
 
 // =====================
-// PAINÉIS
+//         PAINÉIS
 // =====================
 function abrirPainel(painel) {
   painel.classList.remove("oculto");
@@ -148,9 +150,9 @@ btnVerClassificacoes.addEventListener("click", () => abrirPainel(painelClassific
 btnVerClassificacoes2.addEventListener("click", () => abrirPainel(painelClassificacoes));
 botoesFechar.forEach(btn => btn.addEventListener("click", fecharPainel));
 
-// =====================
+// =============================
 // CLASSIFICAÇÕES (placeholder)
-// =====================
+// =============================
 function adicionarResultado(nome, data, dificuldade, tempo, resultado) {
   const tabela = document.querySelector("#tabelaClassificacoes tbody");
   const novaLinha = document.createElement("tr");
@@ -170,7 +172,7 @@ function adicionarResultado(nome, data, dificuldade, tempo, resultado) {
 
 
 // =====================
-// TABULEIRO E PATH
+//   TABULEIRO E PATH
 // =====================
 function construirPath(l, c) {
   pathOrder = [];
@@ -198,7 +200,7 @@ function indexToCoord(idx) {
 }
 
 // =====================
-// GERAR TABULEIRO
+//    GERAR TABULEIRO
 // =====================
 function gerarTabuleiro() {
   gameGrid.innerHTML = "";
@@ -225,7 +227,7 @@ function gerarTabuleiro() {
 }
 
 // =====================
-// DESENHAR TABULEIRO
+//  DESENHAR TABULEIRO
 // =====================
 function desenharTabuleiro(destinos = []) {
   gameGrid.innerHTML = "";
@@ -322,7 +324,7 @@ function destacarSelecao(i, j) {
 }
 
 // =====================
-// ESTADO INICIAL
+//     ESTADO INICIAL
 // =====================
 function inicializarTabuleiro(l, c) {
   tabuleiroDados = [];
@@ -340,7 +342,7 @@ function inicializarTabuleiro(l, c) {
 }
 
 // =====================
-// DADO DE PAUS
+//      DADO DE PAUS
 // =====================
 function lancarDado() {
   // 4 paus: claro (0) / escuro (1)
@@ -451,6 +453,19 @@ function selecionarCasa(i, j) {
     mensagemTexto.innerText = "🎲 Lança o dado antes de mover!";
     return;
   }
+  
+  // Restrição: antes do jogo começar, só pode jogar com dado = 1
+  if (!jogoIniciado && jogadorAtual === "A") {
+    const algumaMovida = tabuleiroDados.flat().some(p => p?.owner === "A" && p.moved);
+    if (!algumaMovida && valorDadoAtual !== 1) {
+      mensagemTexto.innerText = "⚠️ O dado não deu 1. Ainda não podes começar. Passa a vez ao computador.";
+      valorDadoAtual = null;
+      resultadoDado.textContent = "Clique para lançar";
+      setTimeout(() => alternarJogador(), 1000);
+      return;
+    }
+  }
+  
 
   // não há seleção ainda → escolher peça do jogador atual
   if (!casaSelecionada) {
@@ -521,6 +536,12 @@ function moverPeca(i1, j1, i2, j2) {
   // Mover
   tabuleiroDados[i2][j2] = { ...p1, moved: true };
   tabuleiroDados[i1][j1] = null;
+  // Se foi o primeiro movimento válido do jogo → começa oficialmente
+  if (!jogoIniciado) {
+    jogoIniciado = true;
+    mensagemTexto.innerText += " 🎯 O jogo começou oficialmente!";
+  }
+  
 
   // Peça chega à linha final do adversário → sai do tabuleiro (+2 pontos)
   const linhaFinal = player === "A" ? 0 : linhas - 1;
@@ -584,46 +605,90 @@ function alternarJogador() {
 // === IA: escolhe uma jogada válida aleatória (espelho via getCellArrows)
 function jogadaComputador() {
   if (jogadorAtual !== "B") return;
-  if (valorDadoAtual === null) return;
 
-  const jogadas = [];
+  // Passo 1: lançar o dado de paus lentamente
+  mensagemTexto.innerText = "🤖 O computador está a lançar o dado...";
+  setTimeout(() => {
+    // Lança o dado
+    lancarDado();
 
-  for (let i = 0; i < linhas; i++) {
-    for (let j = 0; j < colunas; j++) {
-      const p = tabuleiroDados[i][j];
-      if (p?.owner !== "B") continue;
-      const dests = destinosPossiveis(i, j);
-      for (const d of dests) {
-        // não aterrar em aliado
-        const alvo = tabuleiroDados[d.i][d.j];
-        if (alvo && alvo.owner === "B") continue;
-        jogadas.push({ oi: i, oj: j, di: d.i, dj: d.j });
+    // Espera um pouco para mostrar o valor do dado
+    setTimeout(() => {
+      if (valorDadoAtual === null) return;
+
+      // ============================================
+      //    RESTRIÇÃO: PRIMEIRA JOGADA PRECISA DE 1
+      // ============================================
+      // Restrição: antes do jogo começar, só pode começar com dado = 1
+      if (!jogoIniciado) {
+        const algumaMovidaB = tabuleiroDados.flat().some(p => p?.owner === "B" && p.moved);
+        if (!algumaMovidaB && valorDadoAtual !== 1) {
+          mensagemTexto.innerText = "🤖 O computador não pode começar (não saiu 1). Passa a vez para ti.";
+          valorDadoAtual = null;
+          resultadoDado.textContent = "Clique para lançar";
+          setTimeout(() => alternarJogador(), 1500);
+          return;
+        }
       }
-    }
-  }
 
-  if (jogadas.length === 0) {
-    // sem jogadas → consumir dado e passar
-    mensagemTexto.innerText = "🤖 O computador não tem jogadas válidas. Passa a vez.";
-    const usado = valorDadoAtual;
-    valorDadoAtual = null;
-    resultadoDado.textContent = "Clique para lançar";
-    const repete = [1, 4, 6].includes(usado);
-    if (repete) {
-      // repete mas não tem jogadas — simplesmente volta a lançar e tentar de novo
-      setTimeout(() => { if (valorDadoAtual === null) lancarDado(); setTimeout(jogadaComputador, 500); }, 450);
-    } else {
-      alternarJogador();
-    }
-    return;
-  }
+      // ======================
+      // GERAR JOGADAS VÁLIDAS
+      // ======================
+      const jogadas = [];
 
-  const pick = jogadas[Math.floor(Math.random() * jogadas.length)];
-  moverPeca(pick.oi, pick.oj, pick.di, pick.dj);
+      for (let i = 0; i < linhas; i++) {
+        for (let j = 0; j < colunas; j++) {
+          const p = tabuleiroDados[i][j];
+          if (p?.owner !== "B") continue;
+          const dests = destinosPossiveis(i, j);
+          for (const d of dests) {
+            // não aterrar em aliado
+            const alvo = tabuleiroDados[d.i][d.j];
+            if (alvo && alvo.owner === "B") continue;
+            jogadas.push({ oi: i, oj: j, di: d.i, dj: d.j });
+          }
+        }
+      }
+
+      if (jogadas.length === 0) {
+        // sem jogadas → consumir dado e passar
+        mensagemTexto.innerText = "🤖 O computador não tem jogadas válidas. Passa a vez.";
+        const usado = valorDadoAtual;
+        valorDadoAtual = null;
+        resultadoDado.textContent = "Clique para lançar";
+        const repete = [1, 4, 6].includes(usado);
+        if (repete) {
+          // repete mas não tem jogadas — simplesmente volta a lançar e tentar de novo
+          setTimeout(() => {
+            if (valorDadoAtual === null) lancarDado();
+            setTimeout(jogadaComputador, 1000);
+          }, 1000);
+        } else {
+          setTimeout(() => alternarJogador(), 2000);
+        }
+        return;
+      }
+
+      // ==================================
+      //    ESCOLHER UMA JOGADA ALEATÓRIA
+      // ==================================
+      const pick = jogadas[Math.floor(Math.random() * jogadas.length)];
+
+      mensagemTexto.innerText = `🤖 O computador escolheu mover a peça de [${pick.oi}, ${pick.oj}] para [${pick.di}, ${pick.dj}]...`;
+
+      // pequena pausa antes do movimento para ser visível
+      setTimeout(() => {
+        moverPeca(pick.oi, pick.oj, pick.di, pick.dj);
+      }, 2000); // espera 2s antes de mover
+
+    }, 3000); // espera 3s entre lançar o dado e decidir a jogada
+
+  }, 2000); // espera 2s antes de começar a lançar o dado
 }
 
+
 // =====================
-// INICIAR / DESISTIR
+//   INICIAR / DESISTIR
 // =====================
 btnIniciarJogo.addEventListener("click", () => {
   gerarTabuleiro();
@@ -648,4 +713,5 @@ btnDesistir.addEventListener("click", () => {
   resultadoDado.textContent = "Clique para lançar";
   paus.forEach(pau => pau.classList.remove("escuro")); // todos os paus voltam a claros
 });
+
 
