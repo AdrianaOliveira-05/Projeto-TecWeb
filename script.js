@@ -435,6 +435,7 @@ dadoArea.addEventListener("click", () => {
 // =====================
 // MOVIMENTO E DESTINOS
 // =====================
+
 function destinosPossiveis(i, j) {
   const peca = tabuleiroDados[i][j];
   if (!peca || valorDadoAtual === null) return [];
@@ -443,54 +444,55 @@ function destinosPossiveis(i, j) {
   const player = peca.owner;
   const destinos = [];
 
-  function avancar(ci, cj, k, direcao, sentido) {
-    if (k === passos) {
-      destinos.push({ i: ci, j: cj });
-      return;
-    }
-
-    // avança uma casa
-    let ni = ci;
-    let nj = cj + direcao;
-
-    if (nj < 0 || nj >= colunas) {
-      // chegou ao fim — muda de linha
-      ni += sentido; // sobe (para azul) ou desce (para vermelho)
-      if (ni < 0 || ni >= linhas) return; // saiu do tabuleiro
-      direcao *= -1; // inverte a direção
-      nj = Math.min(Math.max(nj, 0), colunas - 1);
-    }
-
-    // percorre recursivamente
-    avancar(ni, nj, k + 1, direcao, sentido);
-  }
-
-  // parâmetros de movimento
+  // parâmetros de movimento (mesma lógica que tinhas)
   let direcao, sentido;
   if (player === "A") {
-    // jogador azul: começa de baixo (linha 3) e sobe
-    // linhas 3 e 1 → direita; linhas 2 e 0 → esquerda
     const direita = (i % 2 === 1);
     direcao = direita ? 1 : -1;
     sentido = -1; // sobe
   } else {
-    // jogador vermelho: começa de cima (linha 0) e desce (espelho)
     const direita = (i % 2 === 0);
     direcao = direita ? 1 : -1;
     sentido = 1; // desce
   }
 
-  avancar(i, j, 0, direcao, sentido);
+  let ci = i, cj = j;
+  let dir = direcao, sen = sentido;
 
-  // Filtrar casas ocupadas por aliados
-  const finais = destinos.filter(d => {
-    const alvo = tabuleiroDados[d.i][d.j];
-    return !(alvo && alvo.owner === player);
-  });
+  for (let k = 0; k < passos; k++) {
+    let ni = ci;
+    let nj = cj + dir;
 
-  return finais;
+    // passou da extremidade? muda de linha e inverte direção
+    if (nj < 0 || nj >= colunas) {
+      ni += sen;
+      if (ni < 0 || ni >= linhas) return []; // saiu do tabuleiro
+      dir *= -1;
+      nj = Math.min(Math.max(nj, 0), colunas - 1);
+    }
+
+    // antes de avançar, verifica se há peça da mesma cor no caminho
+    const alvo = tabuleiroDados[ni][nj];
+    if (alvo && alvo.owner === player) {
+      // BLOQUEIO: existe peça aliada no caminho → não pode passar
+      return [];
+    }
+
+    // avança uma casa
+    ci = ni;
+    cj = nj;
+  }
+
+  // no fim do percurso, verifica se destino é válido (pode capturar inimigo)
+  if (dentro(ci, cj)) {
+    const destino = tabuleiroDados[ci][cj];
+    if (!destino || destino.owner !== player) {
+      destinos.push({ i: ci, j: cj });
+    }
+  }
+
+  return destinos;
 }
-
 
 function selecionarCasa(i, j) {
   const clicado = tabuleiroDados[i][j];
@@ -827,6 +829,7 @@ btnDesistir.addEventListener("click", () => {
   resultadoDado.textContent = "Clique para lançar";
   paus.forEach(pau => pau.classList.remove("escuro")); // todos os paus voltam a claros
 });
+
 
 
 
