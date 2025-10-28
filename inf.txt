@@ -1,5 +1,5 @@
 O que falta:
 - tentar meter as setas diagonais direitas (quando tem duas numa so caixa)
+- aparecer classificação em tempo real debaixo das mensagens
 - se desistirmos do jogo tem de mostrar a classificaçao que ficou ate aí e mostrar o resultado na tabela das classificaçoes
-- existem modo facil, medio e dificil em IA, temos de alterar isso
 
