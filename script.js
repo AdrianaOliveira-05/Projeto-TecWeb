@@ -341,6 +341,7 @@ function inicializarTabuleiro(l, c) {
   desenharTabuleiro();
 }
 
+
 // =====================
 //      DADO DE PAUS
 // =====================
@@ -370,6 +371,16 @@ function lancarDado() {
   resultadoDado.textContent = `Resultado: ${valorDadoAtual}`;
   mensagemTexto.innerHTML = `<strong>Saiu ${valorDadoAtual}</strong> — ${[1,4,6].includes(valorDadoAtual) ? "repete o turno se jogares." : "depois passa a vez."}`;
 
+  if (!jogoIniciado && jogadorAtual === "A") {
+    const algumaMovida = tabuleiroDados.flat().some(p => p?.owner === "A" && p.moved);
+    if (!algumaMovida && valorDadoAtual !== 1) {
+      mensagemTexto.innerText = "⚠️ O dado não deu 1. Ainda não podes começar.";
+      mostrarBotaoPassarVez();
+      return;
+    } else {
+      esconderBotaoPassarVez();
+    }
+  }
   // pequeno efeito visual
   dadoArea.style.transform = "scale(1.08)";
   setTimeout(() => dadoArea.style.transform = "scale(1)", 160);
@@ -455,17 +466,17 @@ function selecionarCasa(i, j) {
   }
   
   // Restrição: antes do jogo começar, só pode jogar com dado = 1
-  if (!jogoIniciado && jogadorAtual === "A") {
+  /*if (!jogoIniciado && jogadorAtual === "A") {
     const algumaMovida = tabuleiroDados.flat().some(p => p?.owner === "A" && p.moved);
     if (!algumaMovida && valorDadoAtual !== 1) {
-      mensagemTexto.innerText = "⚠️ O dado não deu 1. Ainda não podes começar. Passa a vez ao computador.";
-      valorDadoAtual = null;
-      resultadoDado.textContent = "Clique para lançar";
-      setTimeout(() => alternarJogador(), 1000);
+      mensagemTexto.innerText = "⚠️ O dado não deu 1. Ainda não podes começar.";
+      mostrarBotaoPassarVez();
       return;
+    } else {
+      esconderBotaoPassarVez();
     }
-  }
-  
+  }*/
+
 
   // não há seleção ainda → escolher peça do jogador atual
   if (!casaSelecionada) {
@@ -510,6 +521,25 @@ function selecionarCasa(i, j) {
     mensagemTexto.innerText = "❌ Não é um destino válido.";
   }
 }
+
+
+function mostrarBotaoPassarVez() {
+  const container = document.getElementById("botaoPassarVezContainer");
+  container.innerHTML = `<button id="btnPassarVez">Passar a vez</button>`;
+  const btn = document.getElementById("btnPassarVez");
+  btn.addEventListener("click", () => {
+    container.innerHTML = ""; // remove o botão
+    valorDadoAtual = null;
+    resultadoDado.textContent = "Clique para lançar";
+    alternarJogador();
+  });
+}
+
+function esconderBotaoPassarVez() {
+  const container = document.getElementById("botaoPassarVezContainer");
+  container.innerHTML = "";
+}
+
 
 function moverPeca(i1, j1, i2, j2) {
   const p1 = tabuleiroDados[i1][j1];
@@ -713,5 +743,6 @@ btnDesistir.addEventListener("click", () => {
   resultadoDado.textContent = "Clique para lançar";
   paus.forEach(pau => pau.classList.remove("escuro")); // todos os paus voltam a claros
 });
+
 
 
