@@ -102,6 +102,22 @@ function dentro(i, j) {
   return i >= 0 && i < linhas && j >= 0 && j < colunas;
 }
 
+function aindaNinguemComecou() {
+  return !jogoIniciado;
+}
+
+function temDeSairUmParaComecar() {
+  // Enquanto o jogo não começou, o jogador da vez só pode iniciar se sair 1
+  return aindaNinguemComecou();
+}
+
+function bloquearInicioSeNaoForUm() {
+  if (temDeSairUmParaComecar() && valorDadoAtual !== 1) {
+    return true; // TEM de passar a vez
+  }
+  return false;
+}
+
 function contaPecasDoJogador(owner) {
   let n = 0;
   for (let i = 0; i < linhas; i++)
@@ -153,12 +169,13 @@ botoesFechar.forEach(btn => btn.addEventListener("click", fecharPainel));
 // =============================
 // CLASSIFICAÇÕES (placeholder)
 // =============================
+
 function adicionarResultado(nome, data, dificuldade, tempo, resultado) {
   const tabela = document.querySelector("#tabelaClassificacoes tbody");
-  const novaLinha = document.createElement("tr");
-  const posicao = tabela ? tabela.rows.length + 1 : 1;
-  if (!tabela) return;
+  if (!tabela) return; // segurança
 
+  const posicao = tabela.rows.length + 1;
+  const novaLinha = document.createElement("tr");
   novaLinha.innerHTML = `
     <td>${posicao}</td>
     <td>${nome}</td>
@@ -372,17 +389,35 @@ function lancarDado() {
   mensagemTexto.innerHTML = `<strong>Saiu ${valorDadoAtual}</strong> — ${[1,4,6].includes(valorDadoAtual) ? "repete o turno se jogares." : "depois passa a vez."}`;
 
 
-  // === Gate: antes do jogo começar, só pode jogar quem tirar 1 (aplica-se aos dois) ===
-  if (!jogoIniciado && jogadorAtual === "A") {
-    const algumaMovida = tabuleiroDados.flat().some(p => p?.owner === "A" && p.moved);
+  // Inicio do Jogo
+  if (!jogoIniciado) {
+    const algumaMovida = tabuleiroDados.flat().some(p => p?.owner === jogadorAtual && p.moved);
+
+    // ainda não há peça movida deste jogador
     if (!algumaMovida && valorDadoAtual !== 1) {
-      mensagemTexto.innerText = "⚠️ O dado não deu 1. Ainda não podes começar.";
-      mostrarBotaoPassarVez();
-      return;
+      if ([4, 6].includes(valorDadoAtual)) {
+        // direito a novo lançamento
+        mensagemTexto.innerText = `🎲 Saiu ${valorDadoAtual}. Ainda não podes começar, mas tens direito a novo lançamento!`;
+        // mantém o turno e limpa o valor para poder lançar de novo
+        valorDadoAtual = null;
+        resultadoDado.textContent = "Clique para lançar";
+        esconderBotaoPassarVez();
+        return;
+      } else {
+        // 2 ou 3 → não pode jogar nem repetir
+        mensagemTexto.innerText = "⚠️ O dado não deu 1. Ainda não podes começar. Passa a vez.";
+        mostrarBotaoPassarVez();
+        return;
+      }
     } else {
       esconderBotaoPassarVez();
     }
   }
+
+  
+  // pequeno efeito visual
+  dadoArea.style.transform = "scale(1.08)";
+  setTimeout(() => dadoArea.style.transform = "scale(1)", 160);
 }
 
 // Clique no dado
@@ -464,18 +499,17 @@ function selecionarCasa(i, j) {
     return;
   }
 
-  // Restrição: antes do jogo começar, só pode jogar com dado = 1
-  /*if (!jogoIniciado && jogadorAtual === "A") {
-    const algumaMovida = tabuleiroDados.flat().some(p => p?.owner === "A" && p.moved);
-    if (!algumaMovida && valorDadoAtual !== 1) {
-      mensagemTexto.innerText = "⚠️ O dado não deu 1. Ainda não podes começar.";
-      mostrarBotaoPassarVez();
-      return;
-    } else {
-      esconderBotaoPassarVez();
-    }
-  }*/
 
+  // Bloqueio: antes do jogo começar, só pode mover com 1
+  if (bloquearInicioSeNaoForUm()) {
+    if (jogadorAtual === "A") {
+      mensagemTexto.innerText = "⚠️ Para arrancar o jogo tens de tirar 1 (Tâb).";
+      mostrarBotaoPassarVez();
+    } else {
+      mensagemTexto.innerText = "🤖 O computador ainda não pode começar (faltou 1).";
+    }
+    return;
+  }
 
   // não há seleção ainda → escolher peça do jogador atual
   if (!casaSelecionada) {
@@ -543,6 +577,7 @@ function esconderBotaoPassarVez() {
 function moverPeca(i1, j1, i2, j2) {
   const p1 = tabuleiroDados[i1][j1];
   if (!p1) return;
+
 
   const player = p1.owner;
   const adversario = player === "A" ? "B" : "A";
@@ -636,11 +671,49 @@ function alternarJogador() {
 function jogadaComputador() {
   if (jogadorAtual !== "B") return;
 
+  // Se o jogo ainda não começou, a IA só pode jogar com 1. Este bloco já é coberto em lancarDado()
+  // mas reforçamos aqui para não tentar gerar jogadas quando não pode.
+  if (aindaNinguemComecou() && valorDadoAtual !== null && valorDadoAtual !== 1) {
+    mensagemTexto.innerText = "🤖 Ainda não saiu 1. O computador passa a vez.";
+    //const usado = valorDadoAtual;
+    valorDadoAtual = null;
+    resultadoDado.textContent = "Clique para lançar";
+    setTimeout(() => alternarJogador(), 800);
+    return;
+  }
+
   // Passo 1: lançar o dado de paus lentamente
   mensagemTexto.innerText = "🤖 O computador está a lançar o dado...";
   setTimeout(() => {
     // Lança o dado
     lancarDado();
+
+    // === Gate: antes do jogo começar (IA) ===
+    if (!jogoIniciado) {
+      const algumaMovidaB = tabuleiroDados.flat().some(p => p?.owner === "B" && p.moved);
+
+      if (!algumaMovidaB && valorDadoAtual !== 1) {
+
+        if ([4, 6].includes(valorDadoAtual)) {
+          mensagemTexto.innerText = `🤖 Saiu ${valorDadoAtual}. O computador ainda não pode começar, mas vai lançar novamente.`;
+          valorDadoAtual = null;
+          resultadoDado.textContent = "Clique para lançar";
+          setTimeout(() => {
+            lancarDado();
+            setTimeout(jogadaComputador, 1000);
+          }, 1000);
+          return;
+
+        } else if ([2, 3].includes(valorDadoAtual)) {
+          mensagemTexto.innerText = "🤖 Não saiu 1. O computador passa a vez.";
+          valorDadoAtual = null;
+          resultadoDado.textContent = "Clique para lançar";
+          setTimeout(() => alternarJogador(), 1000);
+          return;
+        }
+      }
+    }
+    
 
     // Espera um pouco para mostrar o valor do dado
     setTimeout(() => {
@@ -706,7 +779,21 @@ function jogadaComputador() {
 //   INICIAR / DESISTIR
 // =====================
 btnIniciarJogo.addEventListener("click", () => {
+  const selects = configuracao.querySelectorAll("select");
+  const tamanhoSel = selects[0]; // já usas isto no gerarTabuleiro
+  const modoSel = selects[1];
+  const primeiroSel = selects[2];
+  const iaSel = selects[3];
+
+  const primeiro = (primeiroSel.value || "").toLowerCase();
+  jogadorAtual = (primeiro.includes("computador")) ? "B" : "A";
   gerarTabuleiro();
+  mensagemTexto.innerText = `Jogo iniciado! ${jogadorAtual === "A" ? "Começas tu." : "O computador começa."}`;
+  if (jogadorAtual === "B") {
+    setTimeout(() => { jogadaComputador(); }, 600);
+  }
+
+  
   configuracao.classList.add("oculto");
   jogo.classList.remove("oculto");
   comandosAntes.classList.add("oculto");
