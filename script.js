@@ -44,7 +44,7 @@ let destinosValidosSelecionados = new Set();
 let pontuacaoA = 0;
 let pontuacaoB = 0;
 let jogoIniciado = false;
-
+let nivelAtualIA = "fácil";
 
 
 // setas do jogador AZUL (A) — exatamente a grelha que estás a desenhar
@@ -439,6 +439,22 @@ dadoArea.addEventListener("click", () => {
 function destinosPossiveis(i, j) {
   const peca = tabuleiroDados[i][j];
   if (!peca || valorDadoAtual === null) return [];
+  // === RESTRIÇÃO: não pode mover na 4ª fila se ainda tiver peças na fila inicial ===
+  if (peca.owner === "A" && i === 0) {
+    const temNaInicial = tabuleiroDados[linhas - 1].some(p => p?.owner === "A" && p !== peca);
+    if (temNaInicial) {
+      mensagemTexto.innerText = "🚫 Não podes mover peças na 4ª fila (linha 0) enquanto ainda tens peças na tua fila inicial (linha 3).";
+      return [];
+    }
+  }
+
+  if (peca.owner === "B" && i === linhas - 1) {
+    const temNaInicial = tabuleiroDados[0].some(p => p?.owner === "B" && p !== peca);
+    if (temNaInicial) {
+      mensagemTexto.innerText = "🚫 O jogador vermelho não pode mover peças na 4ª fila (linha 3) enquanto ainda tem peças na sua fila inicial (linha 0).";
+      return [];
+    }
+  }
 
   const passos = valorDadoAtual;
   const player = peca.owner;
@@ -774,7 +790,132 @@ function jogadaComputador() {
       // ==================================
       //    ESCOLHER UMA JOGADA ALEATÓRIA
       // ==================================
-      const pick = jogadas[Math.floor(Math.random() * jogadas.length)];
+      let pick;
+
+      if (nivelAtualIA === "fácil") {
+        // 🔹 FÁCIL: escolha completamente aleatória
+        pick = jogadas[Math.floor(Math.random() * jogadas.length)];
+      }
+
+      else if (nivelAtualIA === "médio") {
+          // 🔸 IA MÉDIO: mover sempre a peça mais avançada (mais próxima da base da fila 3)
+
+          // Passo 1️⃣ — encontrar todas as peças vermelhas
+          const pecasVermelhas = [];
+          for (let i = 0; i < linhas; i++) {
+            for (let j = 0; j < colunas; j++) {
+              const p = tabuleiroDados[i][j];
+              if (p?.owner === "B") pecasVermelhas.push({ i, j });
+            }
+          }
+
+          if (pecasVermelhas.length === 0) {
+            mensagemTexto.innerText = "🤖 [MÉDIO] O computador não tem peças no tabuleiro.";
+            setTimeout(() => alternarJogador(), 1000);
+            return;
+          }
+
+          // Passo 2️⃣ — calcular a diferença até à linha 3 (base)
+          pecasVermelhas.forEach(p => {
+            p.distanciaBase = Math.abs(3 - p.i);
+          });
+
+          // Passo 3️⃣ — ordenar por proximidade à base (menor diferença primeiro)
+          pecasVermelhas.sort((a, b) => a.distanciaBase - b.distanciaBase);
+
+          // Passo 4️⃣ — tentar mover a peça mais próxima da base (ou a seguinte se não puder)
+          let jogadaEscolhida = null;
+
+          for (const peca of pecasVermelhas) {
+            const dests = destinosPossiveis(peca.i, peca.j);
+            if (dests.length > 0) {
+              // escolher o destino mais avançado (maior i)
+              dests.sort((a, b) => b.i - a.i);
+              const melhorDestino = dests[0];
+              jogadaEscolhida = { oi: peca.i, oj: peca.j, di: melhorDestino.i, dj: melhorDestino.j };
+              break;
+            }
+          }
+
+          if (jogadaEscolhida) {
+            mensagemTexto.innerText = `🤖 [MÉDIO] O computador move a peça mais avançada de [${jogadaEscolhida.oi}, ${jogadaEscolhida.oj}] para [${jogadaEscolhida.di}, ${jogadaEscolhida.dj}].`;
+            setTimeout(() => moverPeca(jogadaEscolhida.oi, jogadaEscolhida.oj, jogadaEscolhida.di, jogadaEscolhida.dj), 800);
+            return;
+          }
+
+          // Passo 5️⃣ — caso não haja jogadas possíveis
+          mensagemTexto.innerText = "🤖 [MÉDIO] Nenhuma peça pode avançar — o computador passa a vez.";
+          const usado = valorDadoAtual;
+          valorDadoAtual = null;
+          resultadoDado.textContent = "Clique para lançar";
+          const repete = [1, 4, 6].includes(usado);
+          if (repete) {
+            setTimeout(() => jogadaComputador(), 1000);
+          } else {
+            setTimeout(() => alternarJogador(), 1000);
+          }
+          return;
+        }
+
+      else if (nivelAtualIA === "difícil") {
+        // 🔺 DIFÍCIL: tenta capturar e evitar expor peças a serem comidas
+        // Passo 1: capturas diretas — prioridade máxima
+        for (const jg of jogadas) {
+          const alvo = tabuleiroDados[jg.di][jg.dj];
+          if (alvo && alvo.owner === "A") {
+            // Esta jogada captura uma peça azul
+            const distancia = Math.abs(jg.di - jg.oi) + Math.abs(jg.dj - jg.oj);
+            if (distancia === valorDadoAtual) {
+              mensagemTexto.innerText = `🤖 [DIFÍCIL] Captura direta! O computador move de [${jg.oi}, ${jg.oj}] para [${jg.di}, ${jg.dj}].`;
+              setTimeout(() => moverPeca(jg.oi, jg.oj, jg.di, jg.dj), 800);
+              return;
+            }
+          }
+        }
+
+        // Passo 2: capturar, se possível
+        const jogadasDeCaptura = jogadas.filter(({ di, dj }) => {
+          const alvo = tabuleiroDados[di][dj];
+          return alvo && alvo.owner === "A";
+        });
+
+        let candidatas = jogadasDeCaptura.length > 0 ? jogadasDeCaptura : jogadas;
+
+        // Função auxiliar: evita deixar peças vermelhas vulneráveis
+        function movimentoSeguro(oi, oj, di, dj) {
+          const temp = tabuleiroDados.map(l => l.map(c => (c ? { ...c } : null)));
+          const peca = temp[oi][oj];
+          temp[oi][oj] = null;
+          temp[di][dj] = peca;
+
+          // verifica se o jogador azul poderia capturar alguma vermelha após o movimento
+          for (let i = 0; i < linhas; i++) {
+            for (let j = 0; j < colunas; j++) {
+              const p = temp[i][j];
+              if (p?.owner === "A") {
+                const dests = destinosPossiveis(i, j);
+                for (const d of dests) {
+                  const alvo = temp[d.i][d.j];
+                  if (alvo && alvo.owner === "B") return false; // risco de captura
+                }
+              }
+            }
+          }
+          return true;
+        }
+
+        // Passo 3: manter só jogadas seguras
+        const seguras = candidatas.filter(({ oi, oj, di, dj }) =>
+          movimentoSeguro(oi, oj, di, dj)
+        );
+
+        if (seguras.length > 0) {
+          pick = seguras[Math.floor(Math.random() * seguras.length)];
+        } else {
+          pick = candidatas[Math.floor(Math.random() * candidatas.length)];
+        }
+      }
+
 
       mensagemTexto.innerText = `🤖 O computador escolheu mover a peça de [${pick.oi}, ${pick.oj}] para [${pick.di}, ${pick.dj}]...`;
 
@@ -792,12 +933,12 @@ function jogadaComputador() {
 // =====================
 //   INICIAR / DESISTIR
 // =====================
+
 btnIniciarJogo.addEventListener("click", () => {
   const selects = configuracao.querySelectorAll("select");
-  const tamanhoSel = selects[0]; // já usas isto no gerarTabuleiro
-  const modoSel = selects[1];
   const primeiroSel = selects[2];
-  const iaSel = selects[3];
+  const nivelIA = selects[3].value.toLowerCase(); // fácil, médio, difícil
+  
 
   const primeiro = (primeiroSel.value || "").toLowerCase();
   jogadorAtual = (primeiro.includes("computador")) ? "B" : "A";
@@ -829,7 +970,6 @@ btnDesistir.addEventListener("click", () => {
   resultadoDado.textContent = "Clique para lançar";
   paus.forEach(pau => pau.classList.remove("escuro")); // todos os paus voltam a claros
 });
-
 
 
 
