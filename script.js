@@ -130,7 +130,7 @@ btnLogin.addEventListener("click", () => {
   comandos.classList.remove("oculto");
   comandosAntes.classList.remove("oculto");
   comandosDurante.classList.add("oculto");
-  
+
 });
 
 // =====================
@@ -301,7 +301,7 @@ function desenharTabuleiro(destinos = []) {
       }
 
       casa.addEventListener("click", () => selecionarCasa(i, j));
-      
+
       gameGrid.appendChild(casa);
     }
   }
@@ -313,7 +313,7 @@ function destacarSelecao(i, j) {
     div.style.outline = "none";
     div.style.boxShadow = "none";
   });
-  
+
   // Destacar origem
   const idx = i * colunas + j;
   const origemDiv = gameGrid.children[idx];
@@ -371,6 +371,8 @@ function lancarDado() {
   resultadoDado.textContent = `Resultado: ${valorDadoAtual}`;
   mensagemTexto.innerHTML = `<strong>Saiu ${valorDadoAtual}</strong> — ${[1,4,6].includes(valorDadoAtual) ? "repete o turno se jogares." : "depois passa a vez."}`;
 
+
+  // === Gate: antes do jogo começar, só pode jogar quem tirar 1 (aplica-se aos dois) ===
   if (!jogoIniciado && jogadorAtual === "A") {
     const algumaMovida = tabuleiroDados.flat().some(p => p?.owner === "A" && p.moved);
     if (!algumaMovida && valorDadoAtual !== 1) {
@@ -381,9 +383,6 @@ function lancarDado() {
       esconderBotaoPassarVez();
     }
   }
-  // pequeno efeito visual
-  dadoArea.style.transform = "scale(1.08)";
-  setTimeout(() => dadoArea.style.transform = "scale(1)", 160);
 }
 
 // Clique no dado
@@ -464,7 +463,7 @@ function selecionarCasa(i, j) {
     mensagemTexto.innerText = "🎲 Lança o dado antes de mover!";
     return;
   }
-  
+
   // Restrição: antes do jogo começar, só pode jogar com dado = 1
   /*if (!jogoIniciado && jogadorAtual === "A") {
     const algumaMovida = tabuleiroDados.flat().some(p => p?.owner === "A" && p.moved);
@@ -569,9 +568,10 @@ function moverPeca(i1, j1, i2, j2) {
   // Se foi o primeiro movimento válido do jogo → começa oficialmente
   if (!jogoIniciado) {
     jogoIniciado = true;
+    esconderBotaoPassarVez();
     mensagemTexto.innerText += " 🎯 O jogo começou oficialmente!";
   }
-  
+
 
   // Peça chega à linha final do adversário → sai do tabuleiro (+2 pontos)
   const linhaFinal = player === "A" ? 0 : linhas - 1;
@@ -609,9 +609,10 @@ function moverPeca(i1, j1, i2, j2) {
   resultadoDado.textContent = "Clique para lançar";
 
   if (repete) {
-    mensagemTexto.innerText += ` Jogaste ${usado}. 🎉 Podes jogar novamente.`;
+    mensagemTexto.innerText += ` Jogaste ${usado}. Podes voltar a lançar.`;
+    esconderBotaoPassarVez();
     if (jogadorAtual === "B") {
-      setTimeout(() => { lancarDado(); setTimeout(jogadaComputador, 600); }, 500);
+      setTimeout(() => { jogadaComputador(); }, 500);
     }
   } else {
     alternarJogador();
@@ -626,8 +627,7 @@ function alternarJogador() {
   if (jogadorAtual === "B") {
     // vez da IA: lança e joga
     setTimeout(() => {
-      if (valorDadoAtual === null) lancarDado();
-      setTimeout(jogadaComputador, 500);
+      jogadaComputador();
     }, 450);
   }
 }
@@ -645,21 +645,6 @@ function jogadaComputador() {
     // Espera um pouco para mostrar o valor do dado
     setTimeout(() => {
       if (valorDadoAtual === null) return;
-
-      // ============================================
-      //    RESTRIÇÃO: PRIMEIRA JOGADA PRECISA DE 1
-      // ============================================
-      // Restrição: antes do jogo começar, só pode começar com dado = 1
-      if (!jogoIniciado) {
-        const algumaMovidaB = tabuleiroDados.flat().some(p => p?.owner === "B" && p.moved);
-        if (!algumaMovidaB && valorDadoAtual !== 1) {
-          mensagemTexto.innerText = "🤖 O computador não pode começar (não saiu 1). Passa a vez para ti.";
-          valorDadoAtual = null;
-          resultadoDado.textContent = "Clique para lançar";
-          setTimeout(() => alternarJogador(), 1500);
-          return;
-        }
-      }
 
       // ======================
       // GERAR JOGADAS VÁLIDAS
