@@ -398,10 +398,12 @@ function lancarDado() {
       if ([4, 6].includes(valorDadoAtual)) {
         // direito a novo lançamento
         mensagemTexto.innerText = `🎲 Saiu ${valorDadoAtual}. Ainda não podes começar, mas tens direito a novo lançamento!`;
-        // mantém o turno e limpa o valor para poder lançar de novo
-        valorDadoAtual = null;
-        resultadoDado.textContent = "Clique para lançar";
-        esconderBotaoPassarVez();
+        setTimeout(() => {
+          valorDadoAtual = null; 
+          resultadoDado.textContent = "Clique para lançar";
+          esconderBotaoPassarVez();
+        }, 1000);
+        
         return;
       } else {
         // 2 ou 3 → não pode jogar nem repetir
@@ -687,6 +689,7 @@ function jogadaComputador() {
   setTimeout(() => {
     // Lança o dado
     lancarDado();
+    esconderBotaoPassarVez();
 
     // === Gate: antes do jogo começar (IA) ===
     if (!jogoIniciado) {
@@ -696,8 +699,13 @@ function jogadaComputador() {
 
         if ([4, 6].includes(valorDadoAtual)) {
           mensagemTexto.innerText = `🤖 Saiu ${valorDadoAtual}. O computador ainda não pode começar, mas vai lançar novamente.`;
-          valorDadoAtual = null;
-          resultadoDado.textContent = "Clique para lançar";
+          setTimeout(() => {
+            valorDadoAtual = null;
+            resultadoDado.textContent = "Clique para lançar";
+            esconderBotaoPassarVez();
+          }, 1000);
+
+            
           setTimeout(() => {
             lancarDado();
             setTimeout(jogadaComputador, 1000);
@@ -706,8 +714,12 @@ function jogadaComputador() {
 
         } else if ([2, 3].includes(valorDadoAtual)) {
           mensagemTexto.innerText = "🤖 Não saiu 1. O computador passa a vez.";
-          valorDadoAtual = null;
-          resultadoDado.textContent = "Clique para lançar";
+          setTimeout(() => {
+            valorDadoAtual = null;
+            resultadoDado.textContent = "Clique para lançar";
+            esconderBotaoPassarVez();
+          }, 1000);
+
           setTimeout(() => alternarJogador(), 1000);
           return;
         }
@@ -815,6 +827,7 @@ btnDesistir.addEventListener("click", () => {
   resultadoDado.textContent = "Clique para lançar";
   paus.forEach(pau => pau.classList.remove("escuro")); // todos os paus voltam a claros
 });
+
 
 
 
