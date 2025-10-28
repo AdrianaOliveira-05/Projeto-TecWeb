@@ -4,8 +4,5 @@ O que falta:
 - existem modo facil, medio e dificil em IA, temos de alterar isso
 - meter as jogadas da IA a acontecer mais devagar, para se perceber melhor o que esta a acontecer
 - aparecer mensagens quando as jogadas nao sao possiveis
-- só começa o jogo quando dá 1 o dado
 - uma peça nao pode avançar outra, ainda que da mesma cor
 
-
-nao esquecer: ultima mensagem dada pelo chat ainda nao foi aplicada no codigo.
