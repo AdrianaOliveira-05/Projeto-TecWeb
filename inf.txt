@@ -4,6 +4,9 @@ O que falta:
 - se desistirmos do jogo tem de mostrar a classificaçao que ficou ate aí e mostrar o resultado na tabela das classificaçoes
 - temos de melhorar o modo medio de ia
 
+- quando desistimos do jogo, a vitoria fica para o adversário
+- colocar a autenticacao "direita"
+
 
 
 * Validar HTML e CSS
