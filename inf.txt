@@ -1,6 +1,7 @@
 O que falta:
 - temos de melhorar os modos de ia
 - as peças estando na terceira fila podem ir para a quarta ou voltar para a segunda
+- quando selecionamos antes de começar quem começa. se selecionarmos jogador, deve ser o jogador o primeiro a lançar o dado. caso selecionemos computador, deve ser a IA  a primeira a lançar o dado. mas de resto o jogo funciona de igual forma.
 
 * Validar HTML e CSS
 
