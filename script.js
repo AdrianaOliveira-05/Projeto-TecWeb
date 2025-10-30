@@ -534,7 +534,7 @@ function inicializarTabuleiro(l, c) {
     }
     tabuleiroDados.push(linha);
   }
-  // ❗️Não tocar em jogadorAtual aqui — respeita a seleção feita antes
+  // Não tocar em jogadorAtual aqui — respeita a seleção feita antes
   desenharTabuleiro();
 }
 
@@ -573,7 +573,7 @@ function lancarDado() {
   mensagemTexto.innerHTML = `<strong>Saiu ${valorDadoAtual}</strong> — ${[1,4,6].includes(valorDadoAtual) ? "repete o turno se jogares." : "depois passa a vez."}`;
 
 
-  // Inicio do Jogo
+  // Início do Jogo
   if (!jogoIniciado) {
     const algumaMovida = tabuleiroDados.flat().some(p => p?.owner === jogadorAtual && p.moved);
 
@@ -1000,7 +1000,7 @@ function alternarJogador() {
 * Executa o turno do computador: lança, decide e move consoante o nível.
 * @returns {void}
 */
-// === IA: escolhe uma jogada válida aleatória (espelho via getCellArrows)
+// IA: escolhe uma jogada válida aleatória (espelho via getCellArrows)
 function jogadaComputador() {
   if (jogadorAtual !== "B") return;
 
@@ -1022,7 +1022,7 @@ function jogadaComputador() {
     lancarDado();
     esconderBotaoPassarVez();
 
-    // === Gate: antes do jogo começar (IA) ===
+    // Gate: antes do jogo começar (IA) 
     if (!jogoIniciado) {
       const algumaMovidaB = tabuleiroDados.flat().some(p => p?.owner === "B" && p.moved);
 
@@ -1114,13 +1114,13 @@ function jogadaComputador() {
       const jogadasFinal = jogadas.filter(({ di }) => di === (linhas - 1)); // última linha do vermelho
 
       if (nivelAtualIA === "fácil") {
-        // 🔹 FÁCIL: sempre aleatório
+        // FÁCIL: sempre aleatório
         pick = jogadas[Math.floor(Math.random() * jogadas.length)];
         mensagemTexto.innerText = "🤖 [FÁCIL] Movimento aleatório.";
       }
 
       else if (nivelAtualIA === "médio") {
-        // 🔸 MÉDIO: captura se possível; senão, aleatório
+        // MÉDIO: captura se possível; senão, aleatório
         if (jogadasCaptura.length > 0) {
           pick = jogadasCaptura[Math.floor(Math.random() * jogadasCaptura.length)];
           mensagemTexto.innerText = "🤖 [MÉDIO] Captura disponível — a aproveitar (1 ponto).";
@@ -1131,7 +1131,7 @@ function jogadaComputador() {
       }
 
       else if (nivelAtualIA === "difícil") {
-        // 🔺 DIFÍCIL: 1) chegar à última linha (2 pts), 2) capturar (1 pt), 3) aleatório
+        // DIFÍCIL: 1) chegar à última linha (2 pts), 2) capturar (1 pt), 3) aleatório
         if (jogadasFinal.length > 0) {
           pick = jogadasFinal[Math.floor(Math.random() * jogadasFinal.length)];
           mensagemTexto.innerText = "🤖 [DIFÍCIL] Prioridade máxima: chegar à última linha (2 pontos).";
@@ -1168,7 +1168,7 @@ btnIniciarJogo.addEventListener("click", () => {
   const primeiroSel = selects[2]; // quem joga primeiro
   const nivelSelecionado = selects[3].value.toLowerCase(); // fácil, médio, difícil
 
-  // 🔹 Guardar o nível escolhido globalmente
+  // Guardar o nível escolhido globalmente
   nivelAtualIA = nivelSelecionado;
 
   const primeiro = (primeiroSel.value || "").toLowerCase();
@@ -1176,16 +1176,16 @@ btnIniciarJogo.addEventListener("click", () => {
 
   gerarTabuleiro();
 
-  // 🔹 Registar data e hora do início do jogo
+  // Registar data e hora do início do jogo
   dataInicioJogo = new Date().toLocaleString("pt-PT");
   numeroJogo = historicoJogos.length + 1;
 
-  // 🔹 Corrigido — faltavam as crases
+
   mensagemTexto.innerText = `Jogo iniciado no modo ${nivelAtualIA.toUpperCase()}! ${
     jogadorAtual === "A" ? "Começas tu." : "O computador começa."
   }`;
 
-  // 🔹 Lógica para quem começa
+  // Lógica para quem começa
   if (jogadorAtual === "B") {
     // Espera meio segundo e a IA começa automaticamente
     setTimeout(() => {
@@ -1215,7 +1215,7 @@ btnDesistir.addEventListener("click", () => {
   const resultadoTexto = `Azul: ${pontuacaoA} | Vermelho: ${pontuicaoB} (Desistência)`;
   registarResultado(vencedor, resultadoTexto, true);
 
-  // === RESET DO DADO ===
+  // RESET DO DADO 
   valorDadoAtual = null;
   resultadoDado.textContent = "Clique para lançar";
   paus.forEach(pau => pau.classList.remove("escuro")); // todos os paus voltam a claros
@@ -1239,6 +1239,7 @@ document.getElementById("btnVoltarInicio").addEventListener("click", () => {
   paus.forEach(pau => pau.classList.remove("escuro"));
   mensagemTexto.innerText = "Novo jogo pronto a iniciar!";
 });
+
 
 
 
