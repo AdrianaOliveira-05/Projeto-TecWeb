@@ -91,6 +91,7 @@
 
         <!-- JOGO -->
         <section id="jogo" class="oculto">
+            <h2 class="sr-only">Jogo</h2>
             <!-- Dado -->
             <section id="dado">
                 <h2>Dado de Paus</h2>
@@ -160,50 +161,25 @@
             </ul>
             <br>
             <h4>Valores do dado de paus</h4>
-            <table border="1" cellspacing="0" cellpadding="6" style="margin:auto; border-collapse:collapse;">
-                <tr>
-                    <th>Soma</th>
-                    <th>Valor</th>
-                    <th>Nome</th>
-                    <th>Repete</th>
-                    <th>Probabilidade</th>
-                </tr>
-                <tr>
-                    <td>0</td>
-                    <td>6</td>
-                    <td>Sitteh</td>
-                    <td>Sim</td>
-                    <td>≈ 6%</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>1</td>
-                    <td>Tâb</td>
-                    <td>Sim</td>
-                    <td>≈ 25%</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>2</td>
-                    <td>Itneyn</td>
-                    <td>Não</td>
-                    <td>≈ 38%</td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>3</td>
-                    <td>Teláteh</td>
-                    <td>Não</td>
-                    <td>≈ 25%</td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td>4</td>
-                    <td>Arba'ah</td>
-                    <td>Sim</td>
-                    <td>≈ 6%</td>
-                </tr>
+            <table class="tabela-dado">
+                <thead>
+                    <tr>
+                        <th>Soma</th>
+                        <th>Valor</th>
+                        <th>Nome</th>
+                        <th>Repete</th>
+                        <th>Probabilidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>0</td><td>6</td><td>Sitteh</td><td>Sim</td><td>≈ 6%</td></tr>
+                    <tr><td>1</td><td>1</td><td>Tâb</td><td>Sim</td><td>≈ 25%</td></tr>
+                    <tr><td>2</td><td>2</td><td>Itneyn</td><td>Não</td><td>≈ 38%</td></tr>
+                    <tr><td>3</td><td>3</td><td>Teláteh</td><td>Não</td><td>≈ 25%</td></tr>
+                    <tr><td>4</td><td>4</td><td>Arba'ah</td><td>Sim</td><td>≈ 6%</td></tr>
+                </tbody>
             </table>
+            
             <p><em>Nota:</em> Não existe valor 5. O jogador repete a jogada se o valor for <strong>1, 4 ou 6</strong>.
             </p>
             <br>
@@ -276,7 +252,7 @@
                 <tbody></tbody>
             </table>
             <div style="display:flex; justify-content:space-between; margin-top:1rem;">
-                <button id="btnApagarHistorico" class= "btnFechar" style="beackground:#b22222;"> Apagar Histórico </button>
+                <button id="btnApagarHistorico" class= "btnFechar" style="background:#b22222;"> Apagar Histórico </button>
                 <button class="btnFechar">Fechar</button>
             </div>
         </section>
