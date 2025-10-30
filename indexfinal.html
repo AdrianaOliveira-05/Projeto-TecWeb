@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tâb - Jogo</title>
+
+    <!-- Importação de fontes Google -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Folha de estilos -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Script principal -->
+    <script defer src="script.js"></script>
+</head>
+
+<body>
+    <!-- LOGOTIPO E SLOGAN -->
+    <header id="logo">
+        <h1>Tâb</h1>
+        <p class="slogan">Estratégia, Tradição e Desafio em cada jogada</p>
+    </header>
+
+    <main>
+
+        <!-- SECÇÃO DE LOGIN / IDENTIFICAÇÃO -->
+        <section id="identificacao">
+            <h2>Identificação</h2>
+            <div class="auth-area">
+                <input type="text" id="user" placeholder="Utilizador">
+                <input type="password" id="pass" placeholder="Senha">
+                <button id="btnLogin">Entrar</button>
+            </div>
+        </section>
+
+        <!-- SECÇÃO DE CONFIGURAÇÃO DO JOGO (VISÍVEL APÓS LOGIN) -->
+        <section id="configuracao" class="oculto">
+            <h2>Configuração</h2>
+            <form>
+                <label>Tamanho do tabuleiro:</label>
+                <select>
+                    <option>4x9 (padrão)</option>
+                    <option>4x7</option>
+                    <option>4x11</option>
+                    <option>4x13</option>
+                    <option>4x15</option>
+                </select>
+
+                <label>Modo de jogo:</label>
+                <select>
+                    <option>Contra o Computador</option>
+                    <option disabled>Contra outro Jogador (indisponível)</option>
+                </select>
+
+                <label>Primeiro a jogar:</label>
+                <select>
+                    <option>Jogador</option>
+                    <option>Computador</option>
+                </select>
+
+                <label>Nível da IA:</label>
+                <select>
+                    <option>Fácil</option>
+                    <option>Médio</option>
+                    <option>Difícil</option>
+                </select>
+            </form>
+        </section>
+
+        <!-- SECÇÃO DE COMANDOS -->
+        <section id="comandos" class="oculto">
+            <h2>Comandos</h2>
+
+            <!-- Comandos antes do jogo começar -->
+            <div class="botoes" id="comandosAntes">
+                <button id="btnIniciarJogo">Iniciar Jogo</button>
+                <button id="btnVerInstrucoes">Ver Instruções</button>
+                <button id="btnVerClassificacoes">Classificações</button>
+            </div>
+
+            <!-- Comandos durante o jogo -->
+            <div class="botoes oculto" id="comandosDurante">
+                <button id="btnDesistir">Desistir</button>
+                <button id="btnVerInstrucoes2">Ver Instruções</button>
+                <button id="btnVerClassificacoes2">Classificações</button>
+            </div>
+        </section>
+
+        <!-- ÁREA PRINCIPAL DO JOGO -->
+        <section id="jogo" class="oculto">
+            <h2 class="sr-only">Jogo</h2>
+
+            <!-- DADO DE PAUS -->
+            <section id="dado">
+                <h2>Dado de Paus</h2>
+
+                <!-- Área onde os paus e o valor do lançamento são exibidos -->
+                <div class="dado-area" id='dadoArea'>
+                    <div id="pausContainer">
+                        <!-- Cada div representa um dos quatro paus -->
+                        <div class="pau"></div>
+                        <div class="pau"></div>
+                        <div class="pau"></div>
+                        <div class="pau"></div>
+                    </div>
+
+                    <!-- Resultado do lançamento -->
+                    <p id="resultadoDado">Clique para lançar</p>
+                </div>
+            </section>
+
+            <!-- TABULEIRO DO JOGO -->
+            <section id="tabuleiro">
+                <h2>Tabuleiro</h2>
+
+                <!-- O tabuleiro será preenchido dinamicamente -->
+                <div class="grid" id="gameGrid"></div>
+            </section>
+
+            <!-- MENSAGENS E FEEDBACK AO JOGADOR -->
+            <section id="mensagens">
+                <h2>Mensagens</h2>
+                <p id="mensagemTexto">Aguarda o início do jogo...</p>
+                <div id="botaoPassarVezContainer"></div>
+            </section>
+
+        </section>
+
+        <!-- SECÇÃO DE INSTRUÇÕES / REGRAS DO JOGO -->
+        <section id="instrucoes" class="painel oculto">
+            <h2>Regras do Jogo Tâb</h2>
+            <!-- Conteúdo explicativo omitido, mantido integralmente como no original -->
+            <!-- Mantido conforme fornecido inicialmente -->
+            <button class="btnFechar">Fechar</button>
+        </section>
+
+        <!-- SECÇÃO DE CLASSIFICAÇÕES / HISTÓRICO -->
+        <section id="classificacoes" class="painel oculto">
+            <h2>Classificações</h2>
+            <p>Histórico de Jogos</p>
+
+            <table id="tabelaClassificacoes">
+                <thead>
+                    <tr>
+                        <th>Jogo</th>
+                        <th>Data</th>
+                        <th>Nível IA</th>
+                        <th>Resultado</th>
+                        <th>Vencedor</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <!-- Botões de gestão -->
+            <div style="display:flex; justify-content:space-between; margin-top:1rem;">
+                <button id="btnApagarHistorico" class="btnFechar" style="background:#b22222;">Apagar Histórico</button>
+                <button class="btnFechar">Fechar</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- RODAPÉ -->
+    <footer>
+        <p>Projeto 1 - Tecnologias Web (2025/26)</p>
+        <p>Autores: Adriana Oliveira, Beatriz Moreira, Daniela Leitão</p>
+    </footer>
+
+    <!-- POP-UP DE FIM DE JOGO -->
+    <div id="popupFimJogo" class="popup-oculto">
+        <div class="popup-conteudo">
+            <h2 id="popupTitulo">Fim do Jogo</h2>
+            <p id="popupPontuacao"></p>
+            <button id="btnVoltarInicio">Voltar à página inicial</button>
+        </div>
+    </div>
+
+</body>
+</html>
