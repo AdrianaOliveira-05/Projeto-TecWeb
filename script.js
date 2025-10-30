@@ -57,6 +57,12 @@ let historicoJogos = JSON.parse(localStorage.getItem("historicoJogos") || "[]");
 
 
 
+/**
+* Calcula as setas de movimento base (perspetiva do jogador A) para a célula (i, j).
+* @param {number} i - Índice da linha.
+* @param {number} j - Índice da coluna.
+* @returns {string[]} Lista de símbolos de setas aplicáveis à célula.
+*/
 // setas do jogador AZUL (A) — exatamente a grelha que estás a desenhar
 function getCellArrowsA(i, j) {
   if (i === 0) {
@@ -85,6 +91,13 @@ const mirrorMap = {
   "↖": "↗", "↗": "↖", "↘": "↙", "↙": "↘"
 };
 
+/**
+* Obtém as setas aplicáveis ao jogador na célula (i, j), espelhando para o jogador B.
+* @param {number} i - Índice da linha.
+* @param {number} j - Índice da coluna.
+* @param {string} player - Identificador do jogador ("A" ou "B").
+* @returns {string[]} Lista de símbolos de setas para a célula segundo o jogador.
+*/
 // devolve as setas aplicáveis ao "player" na célula (i,j)
 function getCellArrows(i, j, player) {
   const base = getCellArrowsA(i, j);
@@ -93,6 +106,13 @@ function getCellArrows(i, j, player) {
   return base.map(s => mirrorMap[s] || s);
 }
 
+/**
+* Calcula a coordenada seguinte a partir de (i, j) seguindo uma direção.
+* @param {number} i - Índice da linha atual.
+* @param {number} j - Índice da coluna atual.
+* @param {string} dir - Direção (↖, ↑, ↗, ←, →, ↙, ↓, ↘).
+* @returns {{i:number, j:number} | null} Nova coordenada ou null se direção inválida.
+*/
 // um passo a partir de (i,j) numa direção (para jogador A; B já vem espelhado)
 function stepFrom(i, j, dir) {
   switch (dir) {
@@ -108,19 +128,37 @@ function stepFrom(i, j, dir) {
   }
 }
 
+/**
+* Verifica se uma coordenada (i, j) está dentro dos limites do tabuleiro.
+* @param {number} i - Índice da linha.
+* @param {number} j - Índice da coluna.
+* @returns {boolean} Verdadeiro se estiver dentro; falso caso contrário.
+*/
 function dentro(i, j) {
   return i >= 0 && i < linhas && j >= 0 && j < colunas;
 }
 
+/**
+* Indica se o jogo ainda não começou oficialmente.
+* @returns {boolean} Verdadeiro se o jogo ainda não começou.
+*/
 function aindaNinguemComecou() {
   return !jogoIniciado;
 }
 
+/**
+* Indica se é obrigatório tirar 1 para começar, enquanto o jogo não começou.
+* @returns {boolean} Verdadeiro se a regra estiver ativa.
+*/
 function temDeSairUmParaComecar() {
   // Enquanto o jogo não começou, o jogador da vez só pode iniciar se sair 1
   return aindaNinguemComecou();
 }
 
+/**
+* Determina se o início está bloqueado por não ter saído 1.
+* @returns {boolean} Verdadeiro se o jogador tiver de passar a vez por não ter saído 1.
+*/
 function bloquearInicioSeNaoForUm() {
   if (temDeSairUmParaComecar() && valorDadoAtual !== 1) {
     return true; // TEM de passar a vez
@@ -128,6 +166,11 @@ function bloquearInicioSeNaoForUm() {
   return false;
 }
 
+/**
+* Conta o número de peças de um jogador no tabuleiro.
+* @param {string} owner - Identificador do jogador ("A" ou "B").
+* @returns {number} Quantidade de peças do jogador.
+*/
 function contaPecasDoJogador(owner) {
   let n = 0;
   for (let i = 0; i < linhas; i++)
@@ -162,9 +205,20 @@ btnLogin.addEventListener("click", () => {
 // =====================
 //         PAINÉIS
 // =====================
+
+/**
+* Abre (mostra) um painel modal.
+* @param {HTMLElement} painel - Elemento do painel a abrir.
+* @returns {void}
+*/
 function abrirPainel(painel) {
   painel.classList.remove("oculto");
 }
+
+/**
+* Fecha (esconde) os painéis de instruções e classificações.
+* @returns {void}
+*/
 function fecharPainel() {
   painelInstrucoes.classList.add("oculto");
   painelClassificacoes.classList.add("oculto");
@@ -191,6 +245,13 @@ botoesFechar.forEach(btn => btn.addEventListener("click", fecharPainel));
 // CLASSIFICAÇÕES (placeholder)
 // =============================
 
+/**
+* Regista o resultado de um jogo no histórico e ordena a tabela.
+* @param {string} vencedor - Texto do vencedor.
+* @param {string} resultadoTexto - Resultado formatado (ex.: "Azul: X | Vermelho: Y").
+* @param {boolean} desistiu - Indica se ocorreu desistência.
+* @returns {void}
+*/
 function registarResultado(vencedor, resultadoTexto, desistiu) {
   const jogoData = {
     jogo: numeroJogo,
@@ -229,7 +290,10 @@ function registarResultado(vencedor, resultadoTexto, desistiu) {
   atualizarTabelaClassificacoes();
 }
 
-
+/**
+* Atualiza a tabela de classificações no DOM com base no histórico.
+* @returns {void}
+*/
 function atualizarTabelaClassificacoes() {
   const corpo = document.querySelector("#tabelaClassificacoes tbody");
   corpo.innerHTML = "";
@@ -264,6 +328,13 @@ document.addEventListener("click", (e) => {
 // =====================
 //   TABULEIRO E PATH
 // =====================
+
+/**
+* Constrói o percurso (path) serpenteado e o mapa de índices para a grelha.
+* @param {number} l - Número de linhas.
+* @param {number} c - Número de colunas.
+* @returns {void}
+*/
 function construirPath(l, c) {
   pathOrder = [];
   indexMap = Array.from({ length: l }, () => Array(c).fill(0));
@@ -282,9 +353,21 @@ function construirPath(l, c) {
   }
 }
 
+/**
+* Converte coordenadas (i, j) no índice linear do path.
+* @param {number} i - Índice da linha.
+* @param {number} j - Índice da coluna.
+* @returns {number} Índice linear correspondente.
+*/
 function coordToIndex(i, j) {
   return indexMap[i][j];
 }
+
+/**
+* Converte um índice linear de path para coordenadas (i, j).
+* @param {number} idx - Índice linear no path.
+* @returns {{i:number, j:number}} Coordenadas equivalentes.
+*/
 function indexToCoord(idx) {
   return pathOrder[idx];
 }
@@ -292,6 +375,11 @@ function indexToCoord(idx) {
 // =====================
 //    GERAR TABULEIRO
 // =====================
+
+/**
+* Gera o tabuleiro, valida o tamanho e inicializa a grelha e path.
+* @returns {boolean} Verdadeiro se o tabuleiro foi gerado com sucesso.
+*/
 function gerarTabuleiro() {
   gameGrid.innerHTML = "";
 
@@ -319,6 +407,12 @@ function gerarTabuleiro() {
 // =====================
 //  DESENHAR TABULEIRO
 // =====================
+
+/**
+* Desenha o tabuleiro e o estado atual das peças e destinos.
+* @param {{i:number, j:number}[]} [destinos=[]] - Lista de destinos a destacar.
+* @returns {void}
+*/
 function desenharTabuleiro(destinos = []) {
   gameGrid.innerHTML = "";
   destinosValidosSelecionados.clear();
@@ -397,6 +491,12 @@ function desenharTabuleiro(destinos = []) {
   }
 }
 
+/**
+* Destaca visualmente a célula selecionada.
+* @param {number} i - Índice da linha.
+* @param {number} j - Índice da coluna.
+* @returns {void}
+*/
 function destacarSelecao(i, j) {
   // Tirar qualquer destaque anterior
   Array.from(gameGrid.children).forEach(div => {
@@ -416,6 +516,13 @@ function destacarSelecao(i, j) {
 // =====================
 //     ESTADO INICIAL
 // =====================
+
+/**
+* Inicializa o tabuleiro com peças nas filas iniciais e redesenha.
+* @param {number} l - Número de linhas.
+* @param {number} c - Número de colunas.
+* @returns {void}
+*/
 function inicializarTabuleiro(l, c) {
   tabuleiroDados = [];
   for (let i = 0; i < l; i++) {
@@ -434,6 +541,11 @@ function inicializarTabuleiro(l, c) {
 // =====================
 //      DADO DE PAUS
 // =====================
+
+/**
+* Lança o dado de paus, calcula o valor e gere regras de início.
+* @returns {void}
+*/
 function lancarDado() {
   // 4 paus: claro (0) / escuro (1)
   let claros = 0;
@@ -508,6 +620,12 @@ dadoArea.addEventListener("click", () => {
 // MOVIMENTO E DESTINOS
 // =====================
 
+/**
+* Calcula os destinos possíveis para a peça em (i, j), incluindo caminho alternativo.
+* @param {number} i - Índice da linha da origem.
+* @param {number} j - Índice da coluna da origem.
+* @returns {{i:number, j:number}[]} Lista de destinos válidos.
+*/
 function destinosPossiveis(i, j) {
   const peca = tabuleiroDados[i][j];
   if (!peca || valorDadoAtual === null) return [];
@@ -581,6 +699,16 @@ function destinosPossiveis(i, j) {
   // ===========================
   // CAMINHO ALTERNATIVO (VOLTA)
   // ===========================
+
+  /**
+  * Simula um percurso com um determinado sentido vertical, retornando destino válido.
+  * @param {number} iniI - Linha inicial.
+  * @param {number} iniJ - Coluna inicial.
+  * @param {number} dirInicial - Direção horizontal inicial (+1 ou -1).
+  * @param {number} senInicial - Sentido vertical inicial (+1 desce, -1 sobe).
+  * @param {number} passosSim - Número de passos a simular.
+  * @returns {{i:number, j:number} | null} Destino válido ou null se bloqueado/fora.
+  */
   // helper local para simular a mesma lógica de percurso mas com 'sen' escolhido
   function simularDestinoComSentido(iniI, iniJ, dirInicial, senInicial, passosSim) {
     let sci = iniI, scj = iniJ;
@@ -636,6 +764,12 @@ function destinosPossiveis(i, j) {
   return destinos;
 }
 
+/**
+* Trata a seleção de células e o fluxo de movimento do jogador.
+* @param {number} i - Índice da linha clicada.
+* @param {number} j - Índice da coluna clicada.
+* @returns {void}
+*/
 function selecionarCasa(i, j) {
   const clicado = tabuleiroDados[i][j];
 
@@ -701,7 +835,10 @@ function selecionarCasa(i, j) {
   }
 }
 
-
+/**
+* Mostra o botão “Passar a vez” e define o seu comportamento.
+* @returns {void}
+*/
 function mostrarBotaoPassarVez() {
   const container = document.getElementById("botaoPassarVezContainer");
   container.innerHTML = `<button id="btnPassarVez">Passar a vez</button>`;
@@ -714,11 +851,21 @@ function mostrarBotaoPassarVez() {
   });
 }
 
+/**
+* Esconde o botão “Passar a vez”.
+* @returns {void}
+*/
 function esconderBotaoPassarVez() {
   const container = document.getElementById("botaoPassarVezContainer");
   container.innerHTML = "";
 }
 
+/**
+* Mostra o pop-up de fim de jogo com vencedor e pontuação.
+* @param {string} vencedor - Texto do vencedor.
+* @param {string} pontuacao - Texto da pontuação final.
+* @returns {void}
+*/
 function mostrarPopupFimJogo(vencedor, pontuacao) {
   const popup = document.getElementById("popupFimJogo");
   const titulo = document.getElementById("popupTitulo");
@@ -729,11 +876,23 @@ function mostrarPopupFimJogo(vencedor, pontuacao) {
   popup.classList.add("mostrar");
 }
 
+/**
+* Esconde o pop-up de fim de jogo.
+* @returns {void}
+*/
 function esconderPopupFimJogo() {
   const popup = document.getElementById("popupFimJogo");
   popup.classList.remove("mostrar");
 }
 
+/**
+* Executa a movimentação de uma peça de (i1, j1) para (i2, j2) aplicando regras.
+* @param {number} i1 - Linha de origem.
+* @param {number} j1 - Coluna de origem.
+* @param {number} i2 - Linha de destino.
+* @param {number} j2 - Coluna de destino.
+* @returns {void}
+*/
 function moverPeca(i1, j1, i2, j2) {
   const p1 = tabuleiroDados[i1][j1];
   if (!p1) return;
@@ -821,7 +980,10 @@ function moverPeca(i1, j1, i2, j2) {
   }
 }
 
-
+/**
+* Alterna o jogador atual e dispara a jogada da IA quando aplicável.
+* @returns {void}
+*/
 function alternarJogador() {
   jogadorAtual = (jogadorAtual === "A") ? "B" : "A";
   mensagemTexto.innerText += ` Agora é a vez do ${jogadorAtual === "A" ? "Jogador Azul" : "Computador (Vermelho)"}.`;
@@ -834,6 +996,10 @@ function alternarJogador() {
   }
 }
 
+/**
+* Executa o turno do computador: lança, decide e move consoante o nível.
+* @returns {void}
+*/
 // === IA: escolhe uma jogada válida aleatória (espelho via getCellArrows)
 function jogadaComputador() {
   if (jogadorAtual !== "B") return;
@@ -1046,7 +1212,7 @@ btnDesistir.addEventListener("click", () => {
 
   document.getElementById("mensagemTexto").innerText = "Jogo terminado ou cancelado.";
   const vencedor = "Jogador Vermelho";
-  const resultadoTexto = `Azul: ${pontuacaoA} | Vermelho: ${pontuacaoB} (Desistência)`;
+  const resultadoTexto = `Azul: ${pontuacaoA} | Vermelho: ${pontuicaoB} (Desistência)`;
   registarResultado(vencedor, resultadoTexto, true);
 
   // === RESET DO DADO ===
