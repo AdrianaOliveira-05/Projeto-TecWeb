@@ -29,6 +29,9 @@ const btnVerClassificacoes = document.getElementById("btnVerClassificacoes");
 const btnVerClassificacoes2 = document.getElementById("btnVerClassificacoes2");
 
 
+
+
+
 // =====================
 //     ESTADO DO JOGO
 // =====================
@@ -45,6 +48,13 @@ let pontuacaoA = 0;
 let pontuacaoB = 0;
 let jogoIniciado = false;
 let nivelAtualIA = "fácil";
+let iaPecaAtual = null;
+
+
+let dataInicioJogo = null;
+let numeroJogo = 0;
+let historicoJogos = JSON.parse(localStorage.getItem("historicoJogos") || "[]");
+
 
 
 // setas do jogador AZUL (A) — exatamente a grelha que estás a desenhar
@@ -162,30 +172,93 @@ function fecharPainel() {
 
 btnVerInstrucoes.addEventListener("click", () => abrirPainel(painelInstrucoes));
 btnVerInstrucoes2.addEventListener("click", () => abrirPainel(painelInstrucoes));
-btnVerClassificacoes.addEventListener("click", () => abrirPainel(painelClassificacoes));
-btnVerClassificacoes2.addEventListener("click", () => abrirPainel(painelClassificacoes));
+btnVerClassificacoes.addEventListener("click", () => {
+  abrirPainel(painelClassificacoes);
+  atualizarTabelaClassificacoes();
+});
+btnVerClassificacoes2.addEventListener("click", () => {
+  abrirPainel(painelClassificacoes);
+  atualizarTabelaClassificacoes();
+});
+atualizarTabelaClassificacoes();
+
+
 botoesFechar.forEach(btn => btn.addEventListener("click", fecharPainel));
+
+
 
 // =============================
 // CLASSIFICAÇÕES (placeholder)
 // =============================
 
-function adicionarResultado(nome, data, dificuldade, tempo, resultado) {
-  const tabela = document.querySelector("#tabelaClassificacoes tbody");
-  if (!tabela) return; // segurança
+function registarResultado(vencedor, resultadoTexto, desistiu) {
+  const jogoData = {
+    jogo: numeroJogo,
+    data: dataInicioJogo,
+    nivelIA: nivelAtualIA.charAt(0).toUpperCase() + nivelAtualIA.slice(1),
+    resultado: resultadoTexto,
+    vencedor: vencedor
+  };
 
-  const posicao = tabela.rows.length + 1;
-  const novaLinha = document.createElement("tr");
-  novaLinha.innerHTML = `
-    <td>${posicao}</td>
-    <td>${nome}</td>
-    <td>${data}</td>
-    <td>${dificuldade}</td>
-    <td>${tempo}</td>
-    <td>${resultado}</td>
-  `;
-  tabela.appendChild(novaLinha);
+  historicoJogos.push(jogoData);
+
+  // === ORDENAR ===
+  historicoJogos.sort((a, b) => {
+    const pontosA = parseInt(a.resultado.match(/Azul:\s*(\d+)/)?.[1] || 0);
+    const pontosB = parseInt(a.resultado.match(/Vermelho:\s*(\d+)/)?.[1] || 0);
+    const difA = Math.abs(pontosA - pontosB);
+    const difB = Math.abs(
+      parseInt(b.resultado.match(/Azul:\s*(\d+)/)?.[1] || 0) -
+      parseInt(b.resultado.match(/Vermelho:\s*(\d+)/)?.[1] || 0)
+    );
+
+    // Vitórias do jogador Azul primeiro (descendente por pontos)
+    if (a.vencedor === "Jogador Azul" && b.vencedor !== "Jogador Azul") return -1;
+    if (a.vencedor !== "Jogador Azul" && b.vencedor === "Jogador Azul") return 1;
+
+    // Se ambos ganharam, ordenar por mais pontos do Azul
+    if (a.vencedor === "Jogador Azul" && b.vencedor === "Jogador Azul") {
+      return pontosB - pontosA;
+    }
+
+    // Se ambos perderam, ordenar por diferença crescente
+    return difA - difB;
+  });
+
+  localStorage.setItem("historicoJogos", JSON.stringify(historicoJogos));
+  atualizarTabelaClassificacoes();
 }
+
+
+function atualizarTabelaClassificacoes() {
+  const corpo = document.querySelector("#tabelaClassificacoes tbody");
+  corpo.innerHTML = "";
+
+  historicoJogos.forEach(j => {
+    const linha = document.createElement("tr");
+    linha.innerHTML = `
+      <td>${j.jogo}</td>
+      <td>${j.data}</td>
+      <td>${j.nivelIA}</td>
+      <td>${j.resultado}</td>
+      <td>${j.vencedor}</td>
+    `;
+    corpo.appendChild(linha);
+  });
+}
+// ======================
+//   APAGAR HISTÓRICO
+// ======================
+document.addEventListener("click", (e) => {
+  if (e.target.id === "btnApagarHistorico") {
+    if (confirm("Tens a certeza que queres apagar todo o histórico de jogos?")) {
+      localStorage.removeItem("historicoJogos");
+      historicoJogos = [];
+      atualizarTabelaClassificacoes();
+      alert("📛 Histórico apagado com sucesso!");
+    }
+  }
+});
 
 
 // =====================
@@ -354,10 +427,9 @@ function inicializarTabuleiro(l, c) {
     }
     tabuleiroDados.push(linha);
   }
-  jogadorAtual = "A";
+  // ❗️Não tocar em jogadorAtual aqui — respeita a seleção feita antes
   desenharTabuleiro();
 }
-
 
 // =====================
 //      DADO DE PAUS
@@ -403,7 +475,7 @@ function lancarDado() {
           resultadoDado.textContent = "Clique para lançar";
           esconderBotaoPassarVez();
         }, 1000);
-        
+
         return;
       } else {
         // 2 ou 3 → não pode jogar nem repetir
@@ -416,7 +488,7 @@ function lancarDado() {
     }
   }
 
-  
+
   // pequeno efeito visual
   dadoArea.style.transform = "scale(1.08)";
   setTimeout(() => dadoArea.style.transform = "scale(1)", 160);
@@ -506,6 +578,60 @@ function destinosPossiveis(i, j) {
       destinos.push({ i: ci, j: cj });
     }
   }
+  // ===========================
+  // CAMINHO ALTERNATIVO (VOLTA)
+  // ===========================
+  // helper local para simular a mesma lógica de percurso mas com 'sen' escolhido
+  function simularDestinoComSentido(iniI, iniJ, dirInicial, senInicial, passosSim) {
+    let sci = iniI, scj = iniJ;
+    let sdir = dirInicial, ssen = senInicial;
+
+    for (let kk = 0; kk < passosSim; kk++) {
+      let sni = sci;
+      let snj = scj + sdir;
+
+      // muda de linha ao bater na extremidade
+      if (snj < 0 || snj >= colunas) {
+        sni += ssen;
+        if (sni < 0 || sni >= linhas) return null; // saiu do tabuleiro
+        sdir *= -1;
+        snj = Math.min(Math.max(snj, 0), colunas - 1);
+      }
+
+      // BLOQUEIO por peça aliada
+      const alvoAlt = tabuleiroDados[sni][snj];
+      if (alvoAlt && alvoAlt.owner === player) return null;
+
+      // avança
+      sci = sni;
+      scj = snj;
+    }
+
+    // destino final válido (vazio ou inimigo)
+    const destinoAlt = tabuleiroDados[sci][scj];
+    if (!destinoAlt || destinoAlt.owner !== player) {
+      return { i: sci, j: scj };
+    }
+    return null;
+  }
+
+  // Apenas criamos o destino alternativo nas linhas pedidas:
+  // A em linha 1 → pode "voltar" (descer) para 2
+  // B em linha 2 → pode "voltar" (subir) para 1
+  let destinoAlternativo = null;
+  if (player === "A" && i === 1) {
+    // inverte o sentido vertical só para esta simulação (descer em vez de subir)
+    destinoAlternativo = simularDestinoComSentido(i, j, direcao, +1, passos);
+  } else if (player === "B" && i === 2) {
+    // inverte o sentido vertical (subir em vez de descer)
+    destinoAlternativo = simularDestinoComSentido(i, j, direcao, -1, passos);
+  }
+
+  // se obtivemos um destino alternativo válido e diferente do normal, adiciona
+  if (destinoAlternativo) {
+    const jaExiste = destinos.some(d => d.i === destinoAlternativo.i && d.j === destinoAlternativo.j);
+    if (!jaExiste) destinos.push(destinoAlternativo);
+  }
 
   return destinos;
 }
@@ -593,6 +719,20 @@ function esconderBotaoPassarVez() {
   container.innerHTML = "";
 }
 
+function mostrarPopupFimJogo(vencedor, pontuacao) {
+  const popup = document.getElementById("popupFimJogo");
+  const titulo = document.getElementById("popupTitulo");
+  const pontos = document.getElementById("popupPontuacao");
+
+  titulo.textContent = `🏆 Venceu o ${vencedor}!`;
+  pontos.textContent = `Pontuação final — ${pontuacao}`;
+  popup.classList.add("mostrar");
+}
+
+function esconderPopupFimJogo() {
+  const popup = document.getElementById("popupFimJogo");
+  popup.classList.remove("mostrar");
+}
 
 function moverPeca(i1, j1, i2, j2) {
   const p1 = tabuleiroDados[i1][j1];
@@ -648,10 +788,17 @@ function moverPeca(i1, j1, i2, j2) {
   const pecasB = contaPecasDoJogador("B");
   if (pecasA === 0 || pecasB === 0) {
     let vencedor = "";
-    if (pontuacaoA > pontuacaoB) vencedor = "🏆 Jogador Azul venceu!";
-    else if (pontuacaoB > pontuacaoA) vencedor = "🏆 Computador venceu!";
-    else vencedor = "🤝 Empate!";
-    mensagemTexto.innerText = `${vencedor} (Azul: ${pontuacaoA} | Vermelho: ${pontuacaoB})`;
+    if (pontuacaoA > pontuacaoB) vencedor = "Jogador Azul";
+    else if (pontuacaoB > pontuacaoA) vencedor = "Computador";
+    else vencedor = "Empate";
+
+    const resultadoTexto = `Azul: ${pontuacaoA} | Vermelho: ${pontuacaoB}`;
+    mensagemTexto.innerText = `🏁 Fim do Jogo! ${vencedor} venceu. (${resultadoTexto})`;
+
+    // Guardar resultado na tabela
+    registarResultado(vencedor, resultadoTexto, false);
+    mostrarPopupFimJogo(vencedor,resultadoTexto);
+
     valorDadoAtual = null;
     resultadoDado.textContent = "Clique para lançar";
     return;
@@ -723,7 +870,7 @@ function jogadaComputador() {
             esconderBotaoPassarVez();
           }, 1000);
 
-            
+
           setTimeout(() => {
             lancarDado();
             setTimeout(jogadaComputador, 1000);
@@ -743,7 +890,7 @@ function jogadaComputador() {
         }
       }
     }
-    
+
 
     // Espera um pouco para mostrar o valor do dado
     setTimeout(() => {
@@ -787,132 +934,47 @@ function jogadaComputador() {
         return;
       }
 
-      // ==================================
-      //    ESCOLHER UMA JOGADA ALEATÓRIA
-      // ==================================
-      let pick;
+      // ===========================================================
+      //           ESCOLHER JOGADA CONFORME NÍVEL DA IA
+      // ===========================================================
+      let pick = null;
+
+      // Conjuntos úteis
+      const jogadasCaptura = jogadas.filter(({ di, dj }) => {
+        const alvo = tabuleiroDados[di][dj];
+        return alvo && alvo.owner === "A"; // aterra em peça azul → captura
+      });
+
+      const jogadasFinal = jogadas.filter(({ di }) => di === (linhas - 1)); // última linha do vermelho
 
       if (nivelAtualIA === "fácil") {
-        // 🔹 FÁCIL: escolha completamente aleatória
+        // 🔹 FÁCIL: sempre aleatório
         pick = jogadas[Math.floor(Math.random() * jogadas.length)];
+        mensagemTexto.innerText = "🤖 [FÁCIL] Movimento aleatório.";
       }
 
       else if (nivelAtualIA === "médio") {
-          // 🔸 IA MÉDIO: mover sempre a peça mais avançada (mais próxima da base da fila 3)
-
-          // Passo 1️⃣ — encontrar todas as peças vermelhas
-          const pecasVermelhas = [];
-          for (let i = 0; i < linhas; i++) {
-            for (let j = 0; j < colunas; j++) {
-              const p = tabuleiroDados[i][j];
-              if (p?.owner === "B") pecasVermelhas.push({ i, j });
-            }
-          }
-
-          if (pecasVermelhas.length === 0) {
-            mensagemTexto.innerText = "🤖 [MÉDIO] O computador não tem peças no tabuleiro.";
-            setTimeout(() => alternarJogador(), 1000);
-            return;
-          }
-
-          // Passo 2️⃣ — calcular a diferença até à linha 3 (base)
-          pecasVermelhas.forEach(p => {
-            p.distanciaBase = Math.abs(3 - p.i);
-          });
-
-          // Passo 3️⃣ — ordenar por proximidade à base (menor diferença primeiro)
-          pecasVermelhas.sort((a, b) => a.distanciaBase - b.distanciaBase);
-
-          // Passo 4️⃣ — tentar mover a peça mais próxima da base (ou a seguinte se não puder)
-          let jogadaEscolhida = null;
-
-          for (const peca of pecasVermelhas) {
-            const dests = destinosPossiveis(peca.i, peca.j);
-            if (dests.length > 0) {
-              // escolher o destino mais avançado (maior i)
-              dests.sort((a, b) => b.i - a.i);
-              const melhorDestino = dests[0];
-              jogadaEscolhida = { oi: peca.i, oj: peca.j, di: melhorDestino.i, dj: melhorDestino.j };
-              break;
-            }
-          }
-
-          if (jogadaEscolhida) {
-            mensagemTexto.innerText = `🤖 [MÉDIO] O computador move a peça mais avançada de [${jogadaEscolhida.oi}, ${jogadaEscolhida.oj}] para [${jogadaEscolhida.di}, ${jogadaEscolhida.dj}].`;
-            setTimeout(() => moverPeca(jogadaEscolhida.oi, jogadaEscolhida.oj, jogadaEscolhida.di, jogadaEscolhida.dj), 800);
-            return;
-          }
-
-          // Passo 5️⃣ — caso não haja jogadas possíveis
-          mensagemTexto.innerText = "🤖 [MÉDIO] Nenhuma peça pode avançar — o computador passa a vez.";
-          const usado = valorDadoAtual;
-          valorDadoAtual = null;
-          resultadoDado.textContent = "Clique para lançar";
-          const repete = [1, 4, 6].includes(usado);
-          if (repete) {
-            setTimeout(() => jogadaComputador(), 1000);
-          } else {
-            setTimeout(() => alternarJogador(), 1000);
-          }
-          return;
+        // 🔸 MÉDIO: captura se possível; senão, aleatório
+        if (jogadasCaptura.length > 0) {
+          pick = jogadasCaptura[Math.floor(Math.random() * jogadasCaptura.length)];
+          mensagemTexto.innerText = "🤖 [MÉDIO] Captura disponível — a aproveitar (1 ponto).";
+        } else {
+          pick = jogadas[Math.floor(Math.random() * jogadas.length)];
+          mensagemTexto.innerText = "🤖 [MÉDIO] Sem captura: movimento aleatório.";
         }
+      }
 
       else if (nivelAtualIA === "difícil") {
-        // 🔺 DIFÍCIL: tenta capturar e evitar expor peças a serem comidas
-        // Passo 1: capturas diretas — prioridade máxima
-        for (const jg of jogadas) {
-          const alvo = tabuleiroDados[jg.di][jg.dj];
-          if (alvo && alvo.owner === "A") {
-            // Esta jogada captura uma peça azul
-            const distancia = Math.abs(jg.di - jg.oi) + Math.abs(jg.dj - jg.oj);
-            if (distancia === valorDadoAtual) {
-              mensagemTexto.innerText = `🤖 [DIFÍCIL] Captura direta! O computador move de [${jg.oi}, ${jg.oj}] para [${jg.di}, ${jg.dj}].`;
-              setTimeout(() => moverPeca(jg.oi, jg.oj, jg.di, jg.dj), 800);
-              return;
-            }
-          }
-        }
-
-        // Passo 2: capturar, se possível
-        const jogadasDeCaptura = jogadas.filter(({ di, dj }) => {
-          const alvo = tabuleiroDados[di][dj];
-          return alvo && alvo.owner === "A";
-        });
-
-        let candidatas = jogadasDeCaptura.length > 0 ? jogadasDeCaptura : jogadas;
-
-        // Função auxiliar: evita deixar peças vermelhas vulneráveis
-        function movimentoSeguro(oi, oj, di, dj) {
-          const temp = tabuleiroDados.map(l => l.map(c => (c ? { ...c } : null)));
-          const peca = temp[oi][oj];
-          temp[oi][oj] = null;
-          temp[di][dj] = peca;
-
-          // verifica se o jogador azul poderia capturar alguma vermelha após o movimento
-          for (let i = 0; i < linhas; i++) {
-            for (let j = 0; j < colunas; j++) {
-              const p = temp[i][j];
-              if (p?.owner === "A") {
-                const dests = destinosPossiveis(i, j);
-                for (const d of dests) {
-                  const alvo = temp[d.i][d.j];
-                  if (alvo && alvo.owner === "B") return false; // risco de captura
-                }
-              }
-            }
-          }
-          return true;
-        }
-
-        // Passo 3: manter só jogadas seguras
-        const seguras = candidatas.filter(({ oi, oj, di, dj }) =>
-          movimentoSeguro(oi, oj, di, dj)
-        );
-
-        if (seguras.length > 0) {
-          pick = seguras[Math.floor(Math.random() * seguras.length)];
+        // 🔺 DIFÍCIL: 1) chegar à última linha (2 pts), 2) capturar (1 pt), 3) aleatório
+        if (jogadasFinal.length > 0) {
+          pick = jogadasFinal[Math.floor(Math.random() * jogadasFinal.length)];
+          mensagemTexto.innerText = "🤖 [DIFÍCIL] Prioridade máxima: chegar à última linha (2 pontos).";
+        } else if (jogadasCaptura.length > 0) {
+          pick = jogadasCaptura[Math.floor(Math.random() * jogadasCaptura.length)];
+          mensagemTexto.innerText = "🤖 [DIFÍCIL] Sem chegada imediata: captura (1 ponto).";
         } else {
-          pick = candidatas[Math.floor(Math.random() * candidatas.length)];
+          pick = jogadas[Math.floor(Math.random() * jogadas.length)];
+          mensagemTexto.innerText = "🤖 [DIFÍCIL] Sem final/captura: movimento aleatório.";
         }
       }
 
@@ -936,19 +998,38 @@ function jogadaComputador() {
 
 btnIniciarJogo.addEventListener("click", () => {
   const selects = configuracao.querySelectorAll("select");
-  const primeiroSel = selects[2];
-  const nivelIA = selects[3].value.toLowerCase(); // fácil, médio, difícil
-  
+
+  const primeiroSel = selects[2]; // quem joga primeiro
+  const nivelSelecionado = selects[3].value.toLowerCase(); // fácil, médio, difícil
+
+  // 🔹 Guardar o nível escolhido globalmente
+  nivelAtualIA = nivelSelecionado;
 
   const primeiro = (primeiroSel.value || "").toLowerCase();
   jogadorAtual = (primeiro.includes("computador")) ? "B" : "A";
+
   gerarTabuleiro();
-  mensagemTexto.innerText = `Jogo iniciado! ${jogadorAtual === "A" ? "Começas tu." : "O computador começa."}`;
+
+  // 🔹 Registar data e hora do início do jogo
+  dataInicioJogo = new Date().toLocaleString("pt-PT");
+  numeroJogo = historicoJogos.length + 1;
+
+  // 🔹 Corrigido — faltavam as crases
+  mensagemTexto.innerText = `Jogo iniciado no modo ${nivelAtualIA.toUpperCase()}! ${
+    jogadorAtual === "A" ? "Começas tu." : "O computador começa."
+  }`;
+
+  // 🔹 Lógica para quem começa
   if (jogadorAtual === "B") {
-    setTimeout(() => { jogadaComputador(); }, 600);
+    // Espera meio segundo e a IA começa automaticamente
+    setTimeout(() => {
+      jogadaComputador();
+    }, 600);
+  } else {
+    // É o jogador: mostra claramente que pode lançar
+    mensagemTexto.innerText += " 🎲 Clica no dado para começar!";
   }
 
-  
   configuracao.classList.add("oculto");
   jogo.classList.remove("oculto");
   comandosAntes.classList.add("oculto");
@@ -964,11 +1045,33 @@ btnDesistir.addEventListener("click", () => {
   comandosAntes.classList.remove("oculto");
 
   document.getElementById("mensagemTexto").innerText = "Jogo terminado ou cancelado.";
+  const vencedor = "Jogador Vermelho";
+  const resultadoTexto = `Azul: ${pontuacaoA} | Vermelho: ${pontuacaoB} (Desistência)`;
+  registarResultado(vencedor, resultadoTexto, true);
 
   // === RESET DO DADO ===
   valorDadoAtual = null;
   resultadoDado.textContent = "Clique para lançar";
   paus.forEach(pau => pau.classList.remove("escuro")); // todos os paus voltam a claros
+});
+
+document.getElementById("btnVoltarInicio").addEventListener("click", () => {
+  esconderPopupFimJogo();
+
+  // Voltar ao menu principal
+  jogo.classList.add("oculto");
+  configuracao.classList.remove("oculto");
+  comandosDurante.classList.add("oculto");
+  comandosAntes.classList.remove("oculto");
+
+  // Reset das variáveis principais
+  jogoIniciado = false;
+  pontuacaoA = 0;
+  pontuacaoB = 0;
+  valorDadoAtual = null;
+  resultadoDado.textContent = "Clique para lançar";
+  paus.forEach(pau => pau.classList.remove("escuro"));
+  mensagemTexto.innerText = "Novo jogo pronto a iniciar!";
 });
 
 
