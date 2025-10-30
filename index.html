@@ -102,6 +102,8 @@
                         <div class="pau"></div>
                     </div>
                     <p id="resultadoDado">Clique para lançar</p>
+                </div>
+                    
             </section>
 
             <!-- Tabuleiro -->
@@ -259,21 +261,24 @@
         <!-- CLASSIFICAÇÕES -->
         <section id="classificacoes" class="painel oculto">
             <h2>Classificações</h2>
-            <p>Melhores resultados registados (modo vs Computador).</p>
+            <p>Histórico de Jogos</p>
 
             <table id="tabelaClassificacoes">
                 <thead>
                     <tr>
-                        <th>Posição</th>
-                        <th>Jogador</th>
+                        <th>Jogo</th>
                         <th>Data</th>
-                        <th>Dificuldade</th>
-                        <th>Tempo de jogo</th>
+                        <th>Nível IA</th>
                         <th>Resultado</th>
+                        <th>Vencedor</th>
                     </tr>
                 </thead>
+                <tbody></tbody>
             </table>
-            <button class="btnFechar">Fechar</button>
+            <div style="display:flex; justify-content:space-between; margin-top:1rem;">
+                <button id="btnApagarHistorico" class= "btnFechar" style="beackground:#b22222;"> Apagar Histórico </button>
+                <button class="btnFechar">Fechar</button>
+            </div>
         </section>
     </main>
 
@@ -282,6 +287,14 @@
         <p>Projeto 1 - Tecnologias Web (2025/26)</p>
         <p>Autores: Adriana Oliveira, Beatriz Moreira, Daniela Leitão</p>
     </footer>
+    <!-- POP-UP FINAL DE JOGO -->
+    <div id="popupFimJogo" class="popup-oculto">
+      <div class="popup-conteudo">
+        <h2 id="popupTitulo">🏁 Fim do Jogo</h2>
+        <p id="popupPontuacao"></p>
+        <button id="btnVoltarInicio">Voltar à página inicial</button>
+      </div>
+    </div>
 </body>
 
 </html>
