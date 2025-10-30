@@ -58,6 +58,18 @@ section {
     border: 2px solid #c1a57b;
 }
 
+.tabela-dado {
+  margin: auto;
+  border-collapse: collapse;
+  border: 1px solid #000; /* substitui o antigo border="1" */
+}
+
+.tabela-dado th,
+.tabela-dado td {
+  border: 1px solid #000;
+  padding: 6px; /* substitui o antigo cellpadding="6" */
+}
+
 /* LOGIN */
 .auth-area input {
     display: block;
@@ -119,6 +131,18 @@ section {
     transform: scale(1.02);
 }
 
+.sr-only {
+    position: absolute; 
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* TABULEIRO */
 .grid {
     display: grid;
@@ -141,6 +165,8 @@ section {
 }
 
 /* DADO */
+
+
 #dado .dado-area {
     font-size: 2rem;
     cursor: pointer;
@@ -163,6 +189,7 @@ section {
 #dadoArea:hover {
     transform: scale(1.05);
 }
+
 
 /* Contém os 4 paus */
 #pausContainer {
@@ -244,9 +271,6 @@ section {
 .painel.oculto {
     display: none;
 }
-
-
-
 
 
 /* TABELA DE CLASSIFICAÇÕES */
@@ -540,4 +564,5 @@ footer {
     transform: scale(1);
   }
 }
+
 
