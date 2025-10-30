@@ -1,3 +1,5 @@
 O que falta:
+- acabar de comparar
+- correr jogo em todos os modos, etc.
 - validar HTML e CSS
-
+- criar o zip e entregar
