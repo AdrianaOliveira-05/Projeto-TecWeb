@@ -1,5 +1,3 @@
 O que falta:
-- as peças estando na terceira fila podem ir para a quarta ou voltar para a segunda
-
-* Validar HTML e CSS
+- validar HTML e CSS
 
