@@ -1,3 +1,5 @@
-O que falta:
+2 pontos a falar com o professor:
 
-- criar o zip e entregar
+- Uma peça só se move na 4ª fila se não existirem peças suas na fila inicial.
+- Se saírem da 4ª fila voltam à 3ª
+
