@@ -1,4 +1,3 @@
 O que falta:
-- acrescentar a informação nas regas
-- validar HTML e CSS
+
 - criar o zip e entregar
