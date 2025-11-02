@@ -570,7 +570,7 @@ function lancarDado() {
   }
 
   resultadoDado.textContent = `Resultado: ${valorDadoAtual}`;
-  mensagemTexto.innerHTML = `<strong>Saiu ${valorDadoAtual}</strong> — ${[1,4,6].includes(valorDadoAtual) ? "repete o turno se jogares." : "depois passa a vez."}`;
+  mensagemTexto.innerHTML = `<strong>Saiu ${valorDadoAtual}</strong> — ${[1, 4, 6].includes(valorDadoAtual) ? "repete o turno se jogares." : "depois passa a vez."}`;
 
 
   // Início do Jogo
@@ -583,7 +583,7 @@ function lancarDado() {
         // direito a novo lançamento
         mensagemTexto.innerText = `🎲 Saiu ${valorDadoAtual}. Ainda não podes começar, mas tens direito a novo lançamento!`;
         setTimeout(() => {
-          valorDadoAtual = null; 
+          valorDadoAtual = null;
           resultadoDado.textContent = "Clique para lançar";
           esconderBotaoPassarVez();
         }, 1000);
@@ -956,7 +956,7 @@ function moverPeca(i1, j1, i2, j2) {
 
     // Guardar resultado na tabela
     registarResultado(vencedor, resultadoTexto, false);
-    mostrarPopupFimJogo(vencedor,resultadoTexto);
+    mostrarPopupFimJogo(vencedor, resultadoTexto);
 
     valorDadoAtual = null;
     resultadoDado.textContent = "Clique para lançar";
@@ -1181,9 +1181,8 @@ btnIniciarJogo.addEventListener("click", () => {
   numeroJogo = historicoJogos.length + 1;
 
 
-  mensagemTexto.innerText = `Jogo iniciado no modo ${nivelAtualIA.toUpperCase()}! ${
-    jogadorAtual === "A" ? "Começas tu." : "O computador começa."
-  }`;
+  mensagemTexto.innerText = `Jogo iniciado no modo ${nivelAtualIA.toUpperCase()}! ${jogadorAtual === "A" ? "Começas tu." : "O computador começa."
+    }`;
 
   // Lógica para quem começa
   if (jogadorAtual === "B") {
@@ -1212,7 +1211,7 @@ btnDesistir.addEventListener("click", () => {
 
   document.getElementById("mensagemTexto").innerText = "Jogo terminado ou cancelado.";
   const vencedor = "Jogador Vermelho";
-  const resultadoTexto = `Azul: ${pontuacaoA} | Vermelho: ${pontuicaoB} (Desistência)`;
+  const resultadoTexto = `Azul: ${pontuacaoA} | Vermelho: ${pontuacaoB} (Desistência)`;
   registarResultado(vencedor, resultadoTexto, true);
 
   // RESET DO DADO 
@@ -1239,6 +1238,7 @@ document.getElementById("btnVoltarInicio").addEventListener("click", () => {
   paus.forEach(pau => pau.classList.remove("escuro"));
   mensagemTexto.innerText = "Novo jogo pronto a iniciar!";
 });
+
 
 
 
