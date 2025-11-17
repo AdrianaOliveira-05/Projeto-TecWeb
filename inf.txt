@@ -4,7 +4,7 @@
 - Se saírem da 4ª fila voltam à 3ª
 
 O que o prof disse
-- as peças nao podem sair mesmo chegando à segunda fila
+- as peças nao podem sair mesmo chegando à quarta fila
 - na segunda entrega retirar a lógica da pontuação uma vez que tb deve haver pontuações diferentes
 - comandos para o lado para aproveitar "espaço vazio" usar flex
 - não aplicar style diretamente no HTML 
