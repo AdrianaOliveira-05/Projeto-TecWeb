@@ -55,6 +55,11 @@ let dataInicioJogo = null;
 let numeroJogo = 0;
 let historicoJogos = JSON.parse(localStorage.getItem("historicoJogos") || "[]");
 
+let modoJogoAtual = "computador";
+let eventSource = null;
+
+
+
 
 
 /**
@@ -179,6 +184,32 @@ function contaPecasDoJogador(owner) {
   return n;
 }
 
+/**
+* Verifica se todas as peças vivas de um jogador estão na sua última fila.
+* @param {string} owner - Identificador do jogador ("A" ou "B").
+* @returns {boolean} Verdadeiro se todas as peças desse jogador estiverem na última fila.
+*/
+function todasPecasNaUltimaLinha(owner) {
+  const ultimaLinhaA = 0;
+  const ultimaLinhaB = linhas - 1;
+
+  let temPecas = false;
+
+  for (let i = 0; i < linhas; i++) {
+    for (let j = 0; j < colunas; j++) {
+      const p = tabuleiroDados[i][j];
+      if (!p || p.owner !== owner) continue;
+
+      temPecas = true;
+
+      if (owner === "A" && i !== ultimaLinhaA) return false;
+      if (owner === "B" && i !== ultimaLinhaB) return false;
+    }
+  }
+
+  return temPecas;
+}
+
 
 
 // =====================
@@ -193,14 +224,34 @@ window.addEventListener("DOMContentLoaded", () => {
   comandosDurante.classList.add("oculto");
 });
 
-btnLogin.addEventListener("click", () => {
-  identificacao.classList.add("oculto");
-  configuracao.classList.remove("oculto");
-  comandos.classList.remove("oculto");
-  comandosAntes.classList.remove("oculto");
-  comandosDurante.classList.add("oculto");
+btnLogin.addEventListener("click", async () => {
+    const nick = document.getElementById("user").value.trim();
+    const password = document.getElementById("pass").value.trim();
 
+    if (!nick || !password) {
+        mensagemTexto.innerText = "⚠️ Preenche utilizador e senha!";
+        return;
+    }
+
+    const result = await serverRegister(nick, password);
+
+    if (result.error) {
+        mensagemTexto.innerText = "❌ Erro: " + result.error;
+        return;
+    }
+
+    // Sucesso — registo/validação feita
+    identificacao.classList.add("oculto");
+    configuracao.classList.remove("oculto");
+    comandos.classList.remove("oculto");
+    comandosAntes.classList.remove("oculto");
+    comandosDurante.classList.add("oculto");
+
+    mensagemTexto.innerText = "✔️ Autenticação feita com sucesso!";
 });
+
+
+
 
 // =====================
 //         PAINÉIS
@@ -226,14 +277,10 @@ function fecharPainel() {
 
 btnVerInstrucoes.addEventListener("click", () => abrirPainel(painelInstrucoes));
 btnVerInstrucoes2.addEventListener("click", () => abrirPainel(painelInstrucoes));
-btnVerClassificacoes.addEventListener("click", () => {
-  abrirPainel(painelClassificacoes);
-  atualizarTabelaClassificacoes();
-});
-btnVerClassificacoes2.addEventListener("click", () => {
-  abrirPainel(painelClassificacoes);
-  atualizarTabelaClassificacoes();
-});
+
+
+btnVerClassificacoes.addEventListener("click", carregarRankingOnline);
+btnVerClassificacoes2.addEventListener("click", carregarRankingOnline);
 atualizarTabelaClassificacoes();
 
 
@@ -286,7 +333,7 @@ function registarResultado(vencedor, resultadoTexto, desistiu) {
     return difA - difB;
   });
 
-  localStorage.setItem("historicoJogos", JSON.stringify(historicoJogos));
+  localStorage.setItem("historicoJogos", JSON.stringify(historicoJogos)); // Guardar no localStorage
   atualizarTabelaClassificacoes();
 }
 
@@ -313,9 +360,9 @@ function atualizarTabelaClassificacoes() {
 // ======================
 //   APAGAR HISTÓRICO
 // ======================
-document.addEventListener("click", (e) => {
-  if (e.target.id === "btnApagarHistorico") {
-    if (confirm("Tens a certeza que queres apagar todo o histórico de jogos?")) {
+document.addEventListener("click", (e) => { 
+  if (e.target.id === "btnApagarHistorico") { 
+    if (confirm("Tens a certeza que queres apagar todo o histórico de jogos?")) { 
       localStorage.removeItem("historicoJogos");
       historicoJogos = [];
       atualizarTabelaClassificacoes();
@@ -400,7 +447,7 @@ function gerarTabuleiro() {
   inicializarTabuleiro(linhas, colunas);
   document.getElementById("mensagemTexto").innerText = "Jogo iniciado! Boa sorte!";
 
-  gameGrid.style.gridTemplateColumns = `repeat(${colunas}, 40px)`;
+  gameGrid.style.gridTemplateColumns = `repeat(${colunas}, 40px)`; 
   return true;
 }
 
@@ -484,11 +531,41 @@ function desenharTabuleiro(destinos = []) {
         casa.appendChild(alvo);
       }
 
-      casa.addEventListener("click", () => selecionarCasa(i, j));
+      casa.addEventListener("click", () => selecionarCasa(i, j)); 
 
       gameGrid.appendChild(casa);
     }
   }
+}
+
+/**
+ * Atualiza o estado do tabuleiro no modo online,
+ * com base nos dados enviados pelo servidor.
+ * @param {object} data - Estado enviado pelo servidor.
+ */
+function atualizarEstadoDoJogoOnline(data) {
+
+    // Atualizar jogador da vez
+    jogadorAtual = (data.turn === document.getElementById("user").value.trim()) ? "A" : "B";
+
+    // Atualizar valor do dado (se existir)
+    if (data.dice !== undefined) {
+        valorDadoAtual = data.dice;
+        resultadoDado.textContent = `Resultado: ${valorDadoAtual}`;
+    }
+
+    // Atualizar tabuleiro
+    if (data.board) {
+        tabuleiroDados = data.board;  // o tabuleiro vem pronto do servidor
+        desenharTabuleiro([]);
+    }
+
+    // Jogada extra (1,4,6)
+    if (data.extra) {
+        mensagemTexto.innerText = "🔁 Tens direito a nova jogada!";
+    } else {
+        mensagemTexto.innerText = "👉 É a tua vez!";
+    }
 }
 
 /**
@@ -607,14 +684,46 @@ function lancarDado() {
 }
 
 // Clique no dado
-dadoArea.addEventListener("click", () => {
-  // só lança se não houver um valor pendente
-  if (valorDadoAtual !== null) {
-    mensagemTexto.innerText = "Já tens um lançamento ativo. Usa-o antes de lançar de novo.";
+dadoArea.addEventListener("click", async () => {
+
+  // ============================
+  //    MODO CONTRA COMPUTADOR
+  // ============================
+  if (modoJogoAtual === "computador") {
+
+    if (valorDadoAtual !== null) {
+      mensagemTexto.innerText = "Já tens um lançamento ativo. Usa-o antes de lançar de novo.";
+      return;
+    }
+
+    lancarDado(); // lançamento local
     return;
   }
-  lancarDado();
+
+  // ============================
+  //        MODO ONLINE
+  // ============================
+  const nick = document.getElementById("user").value.trim();
+  const password = document.getElementById("pass").value.trim();
+
+  if (!window.gameID) {
+    mensagemTexto.innerText = "⚠️ Ainda não foi atribuído um jogo.";
+    return;
+  }
+
+  mensagemTexto.innerText = "🎲 A pedir lançamento ao servidor...";
+
+  const result = await serverRoll(nick, password, window.gameID);
+
+  if (result.error) {
+    mensagemTexto.innerText = "❌ Erro: " + result.error;
+    return;
+  }
+
+  // Não mostramos resultado aqui! O servidor enviará via UPDATE
+  mensagemTexto.innerText = "⏳ A aguardar resultado do servidor...";
 });
+
 
 // =====================
 // MOVIMENTO E DESTINOS
@@ -746,14 +855,16 @@ function destinosPossiveis(i, j) {
   // Apenas criamos o destino alternativo nas linhas pedidas:
   // A em linha 1 → pode "voltar" (descer) para 2
   // B em linha 2 → pode "voltar" (subir) para 1
+  // Caminho alternativo: a partir da última fila, permitir voltar à fila anterior
   let destinoAlternativo = null;
-  if (player === "A" && i === 1) {
-    // inverte o sentido vertical só para esta simulação (descer em vez de subir)
+  if (player === "A" && i === 0) {
+    // Azul na última fila pode "descer" para a anterior
     destinoAlternativo = simularDestinoComSentido(i, j, direcao, +1, passos);
-  } else if (player === "B" && i === 2) {
-    // inverte o sentido vertical (subir em vez de descer)
+  } else if (player === "B" && i === (linhas - 1)) {
+    // Vermelho na última fila pode "subir" para a anterior
     destinoAlternativo = simularDestinoComSentido(i, j, direcao, -1, passos);
   }
+  
 
   // se obtivemos um destino alternativo válido e diferente do normal, adiciona
   if (destinoAlternativo) {
@@ -778,6 +889,7 @@ function selecionarCasa(i, j) {
     mensagemTexto.innerText = "🎲 Lança o dado antes de mover!";
     return;
   }
+  
 
 
   // Bloqueio: antes do jogo começar, só pode mover com 1
@@ -791,6 +903,8 @@ function selecionarCasa(i, j) {
     return;
   }
 
+
+  
   // não há seleção ainda → escolher peça do jogador atual
   if (!casaSelecionada) {
     if (clicado && clicado.owner === jogadorAtual) {
@@ -815,8 +929,16 @@ function selecionarCasa(i, j) {
 
   // já havia peça selecionada → tentar mover
   const key = `${i},${j}`;
+  
   if (destinosValidosSelecionados.has(key)) {
-    moverPeca(casaSelecionada.i, casaSelecionada.j, i, j);
+    if (modoJogoAtual === "computador") {
+      // comportamento antigo: tudo local
+      moverPeca(casaSelecionada.i, casaSelecionada.j, i, j);
+    } else if (modoJogoAtual === "online") {
+      // novo comportamento: notificar servidor
+      enviarJogadaOnline(casaSelecionada.i, casaSelecionada.j, i, j);
+    }
+
     casaSelecionada = null;
     destinosValidosSelecionados.clear();
     return;
@@ -836,20 +958,94 @@ function selecionarCasa(i, j) {
 }
 
 /**
+ * Envia uma jogada ao servidor no modo online.
+ * @param {number} i1 - Linha de origem.
+ * @param {number} j1 - Coluna de origem.
+ * @param {number} i2 - Linha de destino.
+ * @param {number} j2 - Coluna de destino.
+ * @returns {Promise<void>}
+ */
+async function enviarJogadaOnline(i1, j1, i2, j2) {
+  const nick = document.getElementById("user").value.trim();
+  const password = document.getElementById("pass").value.trim();
+
+  if (!window.gameID) {
+    mensagemTexto.innerText = "⚠️ Ainda não tens um jogo associado.";
+    return;
+  }
+
+  // 🔹 FORMATO PROVISÓRIO DO MOVE
+  // Quando o enunciado disser exatamente qual é o formato,
+  // só precisas de mudar ESTA variável.
+  const move = {
+    from: { row: i1, col: j1 },
+    to:   { row: i2, col: j2 }
+  };
+
+  mensagemTexto.innerText = "📨 A enviar jogada ao servidor...";
+
+  const result = await serverNotify(nick, password, window.gameID, move);
+
+  if (result.error) {
+    mensagemTexto.innerText = "❌ Erro na jogada: " + result.error;
+    return;
+  }
+
+  // O efeito real da jogada (mover peças, capturas, fim de jogo, etc.)
+  // virá mais tarde por 'update' do servidor.
+  mensagemTexto.innerText = "⏳ Jogada enviada. A aguardar resposta do servidor...";
+}
+
+/**
 * Mostra o botão “Passar a vez” e define o seu comportamento.
 * @returns {void}
 */
+
 function mostrarBotaoPassarVez() {
   const container = document.getElementById("botaoPassarVezContainer");
   container.innerHTML = `<button id="btnPassarVez">Passar a vez</button>`;
+
   const btn = document.getElementById("btnPassarVez");
-  btn.addEventListener("click", () => {
-    container.innerHTML = ""; // remove o botão
-    valorDadoAtual = null;
-    resultadoDado.textContent = "Clique para lançar";
-    alternarJogador();
+
+  btn.addEventListener("click", async () => {
+
+    // ===================================
+    //      MODO CONTRA O COMPUTADOR
+    // ===================================
+    if (modoJogoAtual === "computador") {
+      container.innerHTML = "";
+      valorDadoAtual = null;
+      resultadoDado.textContent = "Clique para lançar";
+      alternarJogador();
+      return;
+    }
+
+    // ===================================
+    //             MODO ONLINE
+    // ===================================
+    const nick = document.getElementById("user").value.trim();
+    const password = document.getElementById("pass").value.trim();
+
+    if (!window.gameID) {
+      mensagemTexto.innerText = "⚠️ Erro: jogo não definido.";
+      return;
+    }
+
+    mensagemTexto.innerText = "📨 A pedir ao servidor para passar a vez...";
+
+    const result = await serverPass(nick, password, window.gameID);
+
+    if (result.error) {
+      mensagemTexto.innerText = "❌ Erro: " + result.error;
+      return;
+    }
+
+    // Nada muda localmente — aguardamos o UPDATE do servidor
+    mensagemTexto.innerText = "⏳ A aguardar confirmação do servidor...";
   });
 }
+
+
 
 /**
 * Esconde o botão “Passar a vez”.
@@ -872,7 +1068,7 @@ function mostrarPopupFimJogo(vencedor, pontuacao) {
   const pontos = document.getElementById("popupPontuacao");
 
   titulo.textContent = `🏆 Venceu o ${vencedor}!`;
-  pontos.textContent = `Pontuação final — ${pontuacao}`;
+  pontos.textContent = `Peças no Tabuleiro — ${pontuacao}`;
   popup.classList.add("mostrar");
 }
 
@@ -908,13 +1104,6 @@ function moverPeca(i1, j1, i2, j2) {
     return;
   }
 
-  // Captura (ganha +1 ponto)
-  const p2 = tabuleiroDados[i2][j2];
-  if (p2 && p2.owner === adversario) {
-    tabuleiroDados[i2][j2] = null;
-    if (player === "A") pontuacaoA += 1;
-    else pontuacaoB += 1;
-  }
 
   // Mover
   tabuleiroDados[i2][j2] = { ...p1, moved: true };
@@ -927,34 +1116,32 @@ function moverPeca(i1, j1, i2, j2) {
   }
 
 
-  // Peça chega à linha final do adversário → sai do tabuleiro (+2 pontos)
-  const linhaFinal = player === "A" ? 0 : linhas - 1;
-  if (i2 === linhaFinal) {
-    tabuleiroDados[i2][j2] = null;
-    if (player === "A") pontuacaoA += 2;
-    else pontuacaoB += 2;
-    mensagemTexto.innerText = `🚪 ${player === "A" ? "Azul" : "Vermelho"} marcou +2 pontos!`;
-  } else {
-    mensagemTexto.innerText = `✅ ${player === "A" ? "Azul" : "Vermelho"} moveu a peça.`;
-  }
+  mensagemTexto.innerText = `✅ ${player === "A" ? "Azul" : "Vermelho"} moveu a peça.`;
 
   // Atualizar e desenhar
   desenharTabuleiro([]);
   casaSelecionada = null;
 
-  // Verificar fim do jogo
-  const pecasA = contaPecasDoJogador("A");
-  const pecasB = contaPecasDoJogador("B");
-  if (pecasA === 0 || pecasB === 0) {
+  // Verificar fim do jogo: todas as peças de um jogador na última fila
+  const fimA = todasPecasNaUltimaLinha("A");
+  const fimB = todasPecasNaUltimaLinha("B");
+
+  if (fimA || fimB) {
+    const pecasA = contaPecasDoJogador("A");
+    const pecasB = contaPecasDoJogador("B");
+
     let vencedor = "";
-    if (pontuacaoA > pontuacaoB) vencedor = "Jogador Azul";
-    else if (pontuacaoB > pontuacaoA) vencedor = "Computador";
+    if (pecasA > pecasB) vencedor = "Jogador Azul";
+    else if (pecasB > pecasA) vencedor = "Computador";
     else vencedor = "Empate";
+
+    // Guardar estes valores para mostrar nas classificações/pop-up
+    pontuacaoA = pecasA;
+    pontuacaoB = pecasB;
 
     const resultadoTexto = `Azul: ${pontuacaoA} | Vermelho: ${pontuacaoB}`;
     mensagemTexto.innerText = `🏁 Fim do Jogo! ${vencedor} venceu. (${resultadoTexto})`;
 
-    // Guardar resultado na tabela
     registarResultado(vencedor, resultadoTexto, false);
     mostrarPopupFimJogo(vencedor, resultadoTexto);
 
@@ -964,19 +1151,19 @@ function moverPeca(i1, j1, i2, j2) {
   }
 
   // alternar turno (1,4,6 repetem)
-  const usado = valorDadoAtual;
-  const repete = [1, 4, 6].includes(usado);
-  valorDadoAtual = null;
+  const usado = valorDadoAtual; 
+  const repete = [1, 4, 6].includes(usado); 
+  valorDadoAtual = null; 
   resultadoDado.textContent = "Clique para lançar";
 
-  if (repete) {
-    mensagemTexto.innerText += ` Jogaste ${usado}. Podes voltar a lançar.`;
+  if (repete) { 
+    mensagemTexto.innerText += ` Jogaste ${usado}. Podes voltar a lançar.`; 
     esconderBotaoPassarVez();
     if (jogadorAtual === "B") {
-      setTimeout(() => { jogadaComputador(); }, 500);
+      setTimeout(() => { jogadaComputador(); }, 500); 
     }
   } else {
-    alternarJogador();
+    alternarJogador(); 
   }
 }
 
@@ -1162,66 +1349,143 @@ function jogadaComputador() {
 //   INICIAR / DESISTIR
 // =====================
 
-btnIniciarJogo.addEventListener("click", () => {
+btnIniciarJogo.addEventListener("click", async () => {
   const selects = configuracao.querySelectorAll("select");
+  const modo = selects[1].value; // modo de jogo
 
-  const primeiroSel = selects[2]; // quem joga primeiro
-  const nivelSelecionado = selects[3].value.toLowerCase(); // fácil, médio, difícil
+  // ================================
+  //       MODO CONTRA O COMPUTADOR
+  // ================================
+  if (modo.includes("Computador")) {
 
-  // Guardar o nível escolhido globalmente
-  nivelAtualIA = nivelSelecionado;
+    modoJogoAtual = "computador";
 
-  const primeiro = (primeiroSel.value || "").toLowerCase();
-  jogadorAtual = (primeiro.includes("computador")) ? "B" : "A";
+    const primeiroSel = selects[2]; // quem joga primeiro
+    const nivelSelecionado = selects[3].value.toLowerCase(); // fácil, médio, difícil
 
-  gerarTabuleiro();
+    // Guardar o nível escolhido globalmente
+    nivelAtualIA = nivelSelecionado;
 
-  // Registar data e hora do início do jogo
-  dataInicioJogo = new Date().toLocaleString("pt-PT");
-  numeroJogo = historicoJogos.length + 1;
+    const primeiro = (primeiroSel.value || "").toLowerCase();
+    jogadorAtual = (primeiro.includes("computador")) ? "B" : "A";
 
+    // gerar tabuleiro localmente
+    const ok = gerarTabuleiro();
+    if (!ok) {
+      // por ex., se o número de colunas for inválido
+      return;
+    }
 
-  mensagemTexto.innerText = `Jogo iniciado no modo ${nivelAtualIA.toUpperCase()}! ${jogadorAtual === "A" ? "Começas tu." : "O computador começa."
-    }`;
+    // Registar data e hora do início do jogo (modo local)
+    dataInicioJogo = new Date().toLocaleString("pt-PT");
+    numeroJogo = historicoJogos.length + 1;
 
-  // Lógica para quem começa
-  if (jogadorAtual === "B") {
-    // Espera meio segundo e a IA começa automaticamente
-    setTimeout(() => {
-      jogadaComputador();
-    }, 600);
-  } else {
-    // É o jogador: mostra claramente que pode lançar
-    mensagemTexto.innerText += " 🎲 Clica no dado para começar!";
+    // Mensagem inicial
+    mensagemTexto.innerText =
+      `Jogo iniciado no modo ${nivelAtualIA.toUpperCase()}! ` +
+      `${jogadorAtual === "A" ? "Começas tu." : "O computador começa."}`;
+
+    // Lógica para quem começa
+    if (jogadorAtual === "B") {
+      // Espera meio segundo e a IA começa automaticamente
+      setTimeout(() => {
+        jogadaComputador();
+      }, 600);
+    } else {
+      // É o jogador: mostra claramente que pode lançar
+      mensagemTexto.innerText += " 🎲 Clica no dado para começar!";
+    }
+
+    // mostrar secções corretas
+    configuracao.classList.add("oculto");
+    comandosAntes.classList.add("oculto");
+    comandosDurante.classList.remove("oculto");
+    jogo.classList.remove("oculto");
+
+    return; // IMPORTANTÍSSIMO: não cair no modo online
   }
 
+  // ================================
+  //      MODO ONLINE (JOGADOR)
+  // ================================
+
+  modoJogoAtual = "online";
+
+  const nick = document.getElementById("user").value.trim();
+  const password = document.getElementById("pass").value.trim();
+  const group = "61"; // altera para o teu grupo
+  const tamanho = parseInt(selects[0].value.match(/\d+/g)[1]);
+
+  const result = await serverJoin(group, nick, password, tamanho);
+
+  if (result.error) {
+    mensagemTexto.innerText = "❌ Erro: " + result.error;
+    return;
+  }
+
+  // guardar id do jogo
+  window.gameID = result.game;
+  mensagemTexto.innerText = "⏳ A aguardar adversário...";
+
+  iniciarUpdate(nick, window.gameId);
+
+
   configuracao.classList.add("oculto");
-  jogo.classList.remove("oculto");
   comandosAntes.classList.add("oculto");
   comandosDurante.classList.remove("oculto");
+  jogo.classList.remove("oculto");
 });
 
-btnDesistir.addEventListener("click", () => {
-  // voltar à configuração
+
+
+btnDesistir.addEventListener("click", async () => {
+  // voltar à configuração / ecrãs comuns
   jogo.classList.add("oculto");
   configuracao.classList.remove("oculto");
-
   comandosDurante.classList.add("oculto");
   comandosAntes.classList.remove("oculto");
 
-  document.getElementById("mensagemTexto").innerText = "Jogo terminado ou cancelado.";
-  const vencedor = "Jogador Vermelho";
-  const resultadoTexto = `Azul: ${pontuacaoA} | Vermelho: ${pontuacaoB} (Desistência)`;
-  registarResultado(vencedor, resultadoTexto, true);
-
-  // RESET DO DADO 
+  // RESET DO DADO
   valorDadoAtual = null;
   resultadoDado.textContent = "Clique para lançar";
-  paus.forEach(pau => pau.classList.remove("escuro")); // todos os paus voltam a claros
+  paus.forEach(pau => pau.classList.remove("escuro"));
+
+  if (modoJogoAtual === "computador") {
+    // ==========================
+    //    MODO CONTRA COMPUTADOR
+    // ==========================
+    document.getElementById("mensagemTexto").innerText = "Jogo terminado ou cancelado.";
+    const vencedor = "Jogador Vermelho";
+    const resultadoTexto = `Azul: ${pontuacaoA} | Vermelho: ${pontuacaoB} (Desistência)`;
+    registarResultado(vencedor, resultadoTexto, true);
+  } else if (modoJogoAtual === "online") {
+    // ==========================
+    //      MODO ONLINE
+    // ==========================
+    const nick = document.getElementById("user").value.trim();
+    const password = document.getElementById("pass").value.trim();
+
+    if (window.gameID) {
+      try {
+        const result = await serverLeave(nick, password, window.gameID);
+        if (result.error) {
+          console.warn("Erro em leave:", result.error);
+        }
+      } catch (e) {
+        console.error("Falha ao contactar o servidor leave:", e);
+      }
+    }
+
+    document.getElementById("mensagemTexto").innerText =
+      "Saíste do jogo online. A vitória é atribuída ao adversário.";
+  }
 });
 
+
+
+
 document.getElementById("btnVoltarInicio").addEventListener("click", () => {
-  esconderPopupFimJogo();
+  esconderPopupFimJogo(); 
 
   // Voltar ao menu principal
   jogo.classList.add("oculto");
@@ -1241,6 +1505,232 @@ document.getElementById("btnVoltarInicio").addEventListener("click", () => {
 
 
 
+// =====================
+//   2 ENTREGA
+// =====================
+/**
+ * Regista um jogador no servidor ou valida password se já existir.
+ * @param {string} nick - Nome do jogador.
+ * @param {string} password - Password escolhida.
+ * @returns {Promise<object>} Resposta do servidor (error ou sucesso).
+ */
+async function serverRegister(nick, password) {
+    const response = await fetch("http://twserver.alunos.dcc.fc.up.pt:8008/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nick, password })
+    });
+
+    return response.json(); // pode conter {} ou {error:"..."}
+}
+
+/**
+ * Pede ao servidor para entrar num jogo com a dimensão indicada.
+ * @param {string} group - Identificador do grupo.
+ * @param {string} nick - Nome do jogador.
+ * @param {string} password - Password do jogador.
+ * @param {number} size - Número de colunas do tabuleiro.
+ * @returns {Promise<object>} Resposta do servidor (game ou error)
+ */
+async function serverJoin(group, nick, password, size) {
+    const response = await fetch("http://twserver.alunos.dcc.fc.up.pt:8008/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ group, nick, password, size })
+    });
+
+    return response.json(); // { game: "ID" } ou { error:"..." }
+}
+
+/**
+ * Envia ao servidor o pedido para abandonar um jogo.
+ * @param {string} nick - Identificador do jogador.
+ * @param {string} password - Password do jogador.
+ * @param {string} game - Identificador do jogo.
+ * @returns {Promise<object>} Resposta do servidor (pode conter error).
+ */
+async function serverLeave(nick, password, game) {
+  const response = await fetch("http://twserver.alunos.dcc.fc.up.pt:8008/leave", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nick, password, game })
+  });
+
+  return response.json();
+}
+
+/**
+ * Pede ao servidor para lançar o dado de paus.
+ * @param {string} nick - Nome do jogador.
+ * @param {string} password - Password do jogador.
+ * @param {string} game - Identificador do jogo.
+ * @returns {Promise<object>} Resposta do servidor (normalmente { "ok": true } ou erro)
+ */
+async function serverRoll(nick, password, game) {
+    const response = await fetch("http://twserver.alunos.dcc.fc.up.pt:8008/roll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nick, password, game })
+    });
+
+    return response.json(); // pode ser { ok:true } ou { error:"..." }
+}
+
+/**
+ * Notifica o servidor de uma jogada (movimento no tabuleiro).
+ * @param {string} nick - Identificador do jogador.
+ * @param {string} password - Password do jogador.
+ * @param {string} game - Identificador do jogo.
+ * @param {any} move - Representação da jogada (formato definido pelo enunciado/servidor).
+ * @returns {Promise<object>} Resposta do servidor (pode conter error).
+ */
+async function serverNotify(nick, password, game, move) {
+  const response = await fetch("http://twserver.alunos.dcc.fc.up.pt:8008/notify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nick, password, game, move })
+  });
+
+  return response.json(); // normalmente vazio ou { error: "..." }
+}
 
 
+/**
+ * Pede ao servidor para passar a vez.
+ * @param {string} nick - Identificador do jogador.
+ * @param {string} password - Password do jogador.
+ * @param {string} game - Identificador do jogo.
+ * @returns {Promise<object>} Resposta do servidor (pode ter error)
+ */
+async function serverPass(nick, password, game) {
+    const response = await fetch("http://twserver.alunos.dcc.fc.up.pt:8008/pass", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nick, password, game })
+    });
+
+    return response.json(); // { error: "..."} ou {}
+}
+
+/**
+ * Abre a ligação SSE (Server-Sent Events) ao servidor.
+ * Recebe eventos de atualização do jogo.
+ * @param {string} nick - Identificador do jogador.
+ * @param {string} game - ID do jogo.
+ */
+function iniciarUpdate(nick, game) {
+
+    // Fechar ligação anterior se existir
+    if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+    }
+
+    const url = `http://twserver.alunos.dcc.fc.up.pt:8008/update?nick=${encodeURIComponent(nick)}&game=${encodeURIComponent(game)}`;
+
+    eventSource = new EventSource(url);
+
+    mensagemTexto.innerText = " Ligação ao servidor iniciada. À espera de eventos...";
+
+    // ========================
+    // EVENTO DE ERRO
+    // ========================
+    eventSource.onerror = () => {
+        mensagemTexto.innerText = "⚠️ Erro na ligação ao servidor (update).";
+        eventSource.close();
+    };
+
+    // ========================
+    // EVENTO: start
+    // ========================
+    eventSource.addEventListener("start", (e) => {
+        const data = JSON.parse(e.data);
+
+        mensagemTexto.innerText = "🟢 Jogo online começou!";
+
+        // o servidor indica quem começa
+        jogadorAtual = data.turn === nick ? "A" : "B";
+
+        // o servidor envia o tamanho
+        linhas = 4;
+        colunas = data.size;
+
+        // gerar tabuleiro (vazio para o início do modo online)
+        gerarTabuleiro();
+    });
+
+    // ========================
+    // EVENTO: state
+    // ========================
+    eventSource.addEventListener("state", (e) => {
+        const data = JSON.parse(e.data);
+
+        // data contém:
+        // - board: tabuleiro
+        // - turn: quem joga agora
+        // - dice: valor do dado (se aplicável)
+        // - move: última jogada (se houve)
+        // - captured: se capturou peça
+        // - extra: se repete jogada
+
+        atualizarEstadoDoJogoOnline(data);
+    });
+
+    // ========================
+    // EVENTO: end
+    // ========================
+    eventSource.addEventListener("end", (e) => {
+        const data = JSON.parse(e.data);
+
+        mensagemTexto.innerText = `🏁 Jogo terminou. Vencedor: ${data.winner}`;
+
+        // fechar ligações
+        if (eventSource) eventSource.close();
+        eventSource = null;
+    });
+}
+
+/**
+ * Pede ao servidor a tabela de ranking (top 10).
+ * @param {string} group - Identificador do grupo.
+ * @param {number} size - Tamanho do tabuleiro.
+ * @returns {Promise<object>} Ranking ou erro.
+ */
+async function serverRanking(group, size) {
+    const response = await fetch("http://twserver.alunos.dcc.fc.up.pt:8008/ranking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ group, size })
+    });
+
+    return response.json(); // { ranking:[ { nick, victories }, ... ] } ou { error:"..." }
+}
+
+async function carregarRankingOnline() {
+    abrirPainel(painelClassificacoes);
+
+    const group = "61"; // o teu grupo
+    const sizeSelect = configuracao.querySelectorAll("select")[0];
+    const size = parseInt(sizeSelect.value.match(/\d+/g)[1]); // número de colunas
+
+    const result = await serverRanking(group, size);
+
+    const corpo = document.querySelector("#tabelaClassificacoes tbody");
+    corpo.innerHTML = "";
+
+    if (result.error) {
+        corpo.innerHTML = `<tr><td colspan="2">❌ Erro: ${result.error}</td></tr>`;
+        return;
+    }
+
+    // estrutura do servidor: [{nick:"...", victories:X}, ...]
+    result.ranking.forEach(player => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${player.nick}</td>
+            <td>${player.victories}</td>
+        `;
+        corpo.appendChild(tr);
+    });
+}
 
