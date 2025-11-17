@@ -391,6 +391,19 @@ section {
 }
 
 
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.btn-danger {
+    background: #b22222;
+}
+
+
+
 /* =========================================================
    POP-UP FINAL DO JOGO
    ========================================================= */
@@ -498,5 +511,7 @@ footer {
     margin-top: 2rem;
     border-top: 5px solid #b08968;
 }
+
+
 
 
